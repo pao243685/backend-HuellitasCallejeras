@@ -5,8 +5,8 @@ import org.jetbrains.exposed.sql.javatime.date
 import java.util.UUID
 
 
-object TablaAnimal : Table("animal") {
-    val id = uuid("id").clientDefault { UUID.randomUUID() }    // val id = uuid("id").autoGenerate()
+object TablaAnimal : Table("animalito") {
+    val id = uuid("id_animalito").clientDefault { UUID.randomUUID() }    // val id = uuid("id").autoGenerate()
     val nombre = varchar("nombre", 255)
     val especie = varchar("especie", 255)
     val raza = varchar("raza", 255)

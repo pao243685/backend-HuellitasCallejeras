@@ -31,7 +31,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
 
     // --- MariaDB Driver ---
-    implementation("org.mariadb.jdbc:mariadb-java-client:3.4.1")
+    implementation("org.postgresql:postgresql:42.7.3")
+
 
     implementation("ch.qos.logback:logback-classic:1.5.6")
 

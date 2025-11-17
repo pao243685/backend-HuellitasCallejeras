@@ -11,10 +11,10 @@ import java.sql.Connection
 object DatabaseFactory {
     fun init() {
         Database.connect(
-            url = "jdbc:mariadb://localhost:3306/",
-            driver = "org.mariadb.jdbc.Driver",
-            user = "root",
-            password = "contraseña"
+            url = "jdbc:postgresql://localhost:5432/huellitas_callejeras",
+            driver = "org.postgresql.Driver",
+            user = "postgres",
+            password = "Perlita1610"
         )
 
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_REPEATABLE_READ
