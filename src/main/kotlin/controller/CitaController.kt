@@ -1,6 +1,7 @@
 package com.example.controller
 
 import com.example.Routing.request.AnimalRequest
+import com.example.Routing.request.CitasRequest
 import com.example.services.CitasService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
@@ -15,8 +16,13 @@ class CitaController(private val service: CitasService) {
     }
 
     suspend fun add(call: ApplicationCall) {
-        val request = call.receive<AnimalRequest>()
-        service.addCita(request)
-        call.respond(HttpStatusCode.OK)
+        try {
+            val request = call.receive<CitasRequest>()
+            service.addCita(request)
+            call.respond(HttpStatusCode.OK, request)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.BadRequest, "Error: ${e.message}")
+        }
     }
 }
