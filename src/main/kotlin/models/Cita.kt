@@ -1,13 +1,13 @@
 package com.example.models
 
-import kotlinx.serialization.Serializable
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
+import java.util.UUID
 
 data class Cita(
-    val idCitas: Int,
+    val idCitas: UUID,
     val fechaRealizacion: LocalDate,
     val fechaCita: LocalDate,
     val motivo: String,
     val lugar: String,
-    val idAnimalito: Int
+    val idAnimalito: UUID
 )
