@@ -1,12 +1,15 @@
 package com.example.domain.models
 
+import com.example.UUIDSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
 import java.time.Instant
+import java.util.UUID
 
 @Serializable
 data class Animalito(
-    val id: Int = 0,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID,
     val nombre: String,
     val peso: Float,
     val raza: String? = null,
@@ -14,7 +17,8 @@ data class Animalito(
     val edad: Int,
     val especie: String,
     val estado: String,
-    @Contextual val fechaSalida: Instant? = null
+    @Contextual val fechaSalida: Instant? = null,
+    val urlImage: String
 )
 
 @Serializable
@@ -25,28 +29,33 @@ data class AnimalitoRequest(
     val sexo: String,
     val edad: Int,
     val especie: String,
-    val estado: String
+    val estado: String,
+    val urlImage: String
 )
 
 @Serializable
 data class Rescate(
-    val id: Int = 0,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID,
     @Contextual val fechaIngreso: Instant,
     val lugar: String,
     val descripcion: String,
-    val animalitoId: Int
+    @Serializable(with = UUIDSerializer::class)
+    val animalitoId: UUID
 )
 
 @Serializable
 data class RescateRequest(
     val lugar: String,
     val descripcion: String,
-    val animalitoId: Int
+    @Serializable(with = UUIDSerializer::class)
+    val animalitoId: UUID
 )
 
 @Serializable
 data class Tratamiento(
-    val id: Int = 0,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID,
     @Contextual val fechaInicio: Instant,
     val receta: String
 )
@@ -54,13 +63,15 @@ data class Tratamiento(
 @Serializable
 data class TratamientoRequest(
     val receta: String,
-    val animalitoId: Int,
+    @Serializable(with = UUIDSerializer::class)
+    val animalitoId: UUID,
     val medicamentos: List<MedicamentoTratamiento>
 )
 
 @Serializable
 data class Medicamento(
-    val id: Int = 0,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID,
     val nombre: String
 )
 
@@ -71,7 +82,8 @@ data class MedicamentoRequest(
 
 @Serializable
 data class MedicamentoTratamiento(
-    val medicamentoId: Int,
+    @Serializable(with = UUIDSerializer::class)
+    val medicamentoId: UUID,
     val dosis: Float,
     val repeticion: Float,
     @Contextual val fechaConclusion: Instant? = null
@@ -79,12 +91,14 @@ data class MedicamentoTratamiento(
 
 @Serializable
 data class Cita(
-    val id: Int = 0,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID,
     @Contextual val fechaRealizacion: Instant,
     @Contextual val fechaCita: Instant,
     val motivo: String,
     val lugar: String,
-    val animalitoId: Int
+    @Serializable(with = UUIDSerializer::class)
+    val animalitoId: UUID
 )
 
 @Serializable
@@ -92,7 +106,8 @@ data class CitaRequest(
     @Contextual val fechaCita: Instant,
     val motivo: String,
     val lugar: String,
-    val animalitoId: Int
+    @Serializable(with = UUIDSerializer::class)
+    val animalitoId: UUID
 )
 
 @Serializable

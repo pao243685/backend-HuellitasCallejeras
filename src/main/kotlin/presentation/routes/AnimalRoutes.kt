@@ -12,6 +12,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
+import java.util.UUID
 
 fun Route.animalRoutes(service: AnimalService) {
 
@@ -43,7 +44,7 @@ fun Route.animalRoutes(service: AnimalService) {
         // GET /api/animalitos/{id} - Obtener un animalito por ID
         get("/{id}") {
             try {
-                val id = call.parameters["id"]?.toIntOrNull()
+                val id = call.parameters["id"]?.let { UUID.fromString(it)}
                 if (id == null) {
                     call.respond(
                         HttpStatusCode.BadRequest,
@@ -155,7 +156,7 @@ fun Route.animalRoutes(service: AnimalService) {
         // PUT /api/animalitos/{id} - Actualizar animalito
         put("/{id}") {
             try {
-                val id = call.parameters["id"]?.toIntOrNull()
+                val id = call.parameters["id"]?.let { UUID.fromString(it) }
                 if (id == null) {
                     call.respond(
                         HttpStatusCode.BadRequest,
@@ -210,7 +211,7 @@ fun Route.animalRoutes(service: AnimalService) {
         // DELETE /api/animalitos/{id} - Eliminar animalito
         delete("/{id}") {
             try {
-                val id = call.parameters["id"]?.toIntOrNull()
+                val id = call.parameters["id"]?.let { UUID.fromString(it) }
                 if (id == null) {
                     call.respond(
                         HttpStatusCode.BadRequest,

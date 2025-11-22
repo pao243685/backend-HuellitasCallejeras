@@ -11,13 +11,14 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
+import java.util.UUID
 
 interface MedicamentoRepository {
     suspend fun getAllMedicamentos(): List<Medicamento>
-    suspend fun getMedicamentoById(id: Int): Medicamento?
+    suspend fun getMedicamentoById(id: UUID): Medicamento?
     suspend fun createMedicamento(request: MedicamentoRequest): Medicamento?
-    suspend fun updateMedicamento(id: Int, nombre: String): Boolean
-    suspend fun deleteMedicamento(id: Int): Boolean
+    suspend fun updateMedicamento(id: UUID, nombre: String): Boolean
+    suspend fun deleteMedicamento(id: UUID): Boolean
 }
 
 class MedicamentoRepositoryImpl : MedicamentoRepository {
@@ -31,7 +32,7 @@ class MedicamentoRepositoryImpl : MedicamentoRepository {
         Medicamentos.selectAll().map { it.toMedicamento() }
     }
 
-    override suspend fun getMedicamentoById(id: Int): Medicamento? = dbQuery {
+    override suspend fun getMedicamentoById(id: UUID): Medicamento? = dbQuery {
         Medicamentos.select { Medicamentos.id eq id }
             .map { it.toMedicamento() }
             .singleOrNull()
@@ -45,13 +46,13 @@ class MedicamentoRepositoryImpl : MedicamentoRepository {
         insertStatement.resultedValues?.singleOrNull()?.toMedicamento()
     }
 
-    override suspend fun updateMedicamento(id: Int, nombre: String): Boolean = dbQuery {
+    override suspend fun updateMedicamento(id: UUID, nombre: String): Boolean = dbQuery {
         Medicamentos.update({ Medicamentos.id eq id }) {
             it[Medicamentos.nombre] = nombre
         } > 0
     }
 
-    override suspend fun deleteMedicamento(id: Int): Boolean = dbQuery {
+    override suspend fun deleteMedicamento(id: UUID): Boolean = dbQuery {
         Medicamentos.deleteWhere { Medicamentos.id eq id } > 0
     }
 }

@@ -15,16 +15,17 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.time.Instant
+import java.util.UUID
 
 
 interface TratamientoRepository {
     suspend fun getAllTratamientos(): List<Tratamiento>
-    suspend fun getTratamientoById(id: Int): Tratamiento?
-    suspend fun getTratamientosByAnimalito(animalitoId: Int): List<Tratamiento>
+    suspend fun getTratamientoById(id: UUID): Tratamiento?
+    suspend fun getTratamientosByAnimalito(animalitoId: UUID): List<Tratamiento>
     suspend fun createTratamiento(request: TratamientoRequest): Tratamiento?
-    suspend fun updateTratamiento(id: Int, receta: String): Boolean
-    suspend fun deleteTratamiento(id: Int): Boolean
-    suspend fun getMedicamentosByTratamiento(tratamientoId: Int): List<MedicamentoTratamiento>
+    suspend fun updateTratamiento(id: UUID, receta: String): Boolean
+    suspend fun deleteTratamiento(id: UUID): Boolean
+    suspend fun getMedicamentosByTratamiento(tratamientoId: UUID): List<MedicamentoTratamiento>
 }
 
 class TratamientoRepositoryImpl : TratamientoRepository {
@@ -39,13 +40,13 @@ class TratamientoRepositoryImpl : TratamientoRepository {
         Tratamientos.selectAll().map { it.toTratamiento() }
     }
 
-    override suspend fun getTratamientoById(id: Int): Tratamiento? = dbQuery {
+    override suspend fun getTratamientoById(id: UUID): Tratamiento? = dbQuery {
         Tratamientos.select { Tratamientos.id eq id }
             .map { it.toTratamiento() }
             .singleOrNull()
     }
 
-    override suspend fun getTratamientosByAnimalito(animalitoId: Int): List<Tratamiento> = dbQuery {
+    override suspend fun getTratamientosByAnimalito(animalitoId: UUID): List<Tratamiento> = dbQuery {
         (Tratamientos innerJoin TratamientoAnimalito)
             .select { TratamientoAnimalito.animalitoId eq animalitoId }
             .map {
@@ -83,19 +84,19 @@ class TratamientoRepositoryImpl : TratamientoRepository {
         getTratamientoById(tratamientoId)
     }
 
-    override suspend fun updateTratamiento(id: Int, receta: String): Boolean = dbQuery {
+    override suspend fun updateTratamiento(id: UUID, receta: String): Boolean = dbQuery {
         Tratamientos.update({ Tratamientos.id eq id }) {
             it[Tratamientos.receta] = receta
         } > 0
     }
 
-    override suspend fun deleteTratamiento(id: Int): Boolean = dbQuery {
+    override suspend fun deleteTratamiento(id: UUID): Boolean = dbQuery {
         TratamientoMedicamento.deleteWhere { tratamientoId eq id }
         TratamientoAnimalito.deleteWhere { tratamientoId eq id }
         Tratamientos.deleteWhere { Tratamientos.id eq id } > 0
     }
 
-    override suspend fun getMedicamentosByTratamiento(tratamientoId: Int): List<MedicamentoTratamiento> = dbQuery {
+    override suspend fun getMedicamentosByTratamiento(tratamientoId: UUID): List<MedicamentoTratamiento> = dbQuery {
         TratamientoMedicamento
             .select { TratamientoMedicamento.tratamientoId eq tratamientoId }
             .map {

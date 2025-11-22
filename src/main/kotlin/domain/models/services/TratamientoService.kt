@@ -3,14 +3,15 @@ package com.example.domain.models.services
 import com.example.data.tables.repositories.TratamientoRepository
 import com.example.domain.models.Tratamiento
 import com.example.domain.models.TratamientoRequest
+import java.util.UUID
 
 class TratamientoService(private val repository: TratamientoRepository) {
 
     suspend fun getAllTratamientos() = repository.getAllTratamientos()
 
-    suspend fun getTratamientoById(id: Int) = repository.getTratamientoById(id)
+    suspend fun getTratamientoById(id: UUID) = repository.getTratamientoById(id)
 
-    suspend fun getTratamientosByAnimalito(animalitoId: Int) =
+    suspend fun getTratamientosByAnimalito(animalitoId: UUID) =
         repository.getTratamientosByAnimalito(animalitoId)
 
     suspend fun createTratamiento(request: TratamientoRequest): Tratamiento? {
@@ -23,13 +24,13 @@ class TratamientoService(private val repository: TratamientoRepository) {
         return repository.createTratamiento(request)
     }
 
-    suspend fun updateTratamiento(id: Int, receta: String): Boolean {
+    suspend fun updateTratamiento(id: UUID, receta: String): Boolean {
         require(receta.isNotBlank()) { "La receta no puede estar vacía" }
         return repository.updateTratamiento(id, receta)
     }
 
-    suspend fun deleteTratamiento(id: Int) = repository.deleteTratamiento(id)
+    suspend fun deleteTratamiento(id: UUID) = repository.deleteTratamiento(id)
 
-    suspend fun getMedicamentosByTratamiento(tratamientoId: Int) =
+    suspend fun getMedicamentosByTratamiento(tratamientoId: UUID) =
         repository.getMedicamentosByTratamiento(tratamientoId)
 }

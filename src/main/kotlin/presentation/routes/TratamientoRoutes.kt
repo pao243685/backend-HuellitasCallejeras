@@ -14,17 +14,27 @@ import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import kotlin.text.toIntOrNull
 
+import java.util.UUID
+
 fun Route.tratamientoRoutes(service: TratamientoService) {
     route("/tratamientos") {
+
         get {
             val tratamientos = service.getAllTratamientos()
             call.respond(ApiResponse(true, "Tratamientos obtenidos", tratamientos))
         }
 
         get("/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(
-                HttpStatusCode.BadRequest, ApiResponse<Any>(false, "ID inválido")
-            )
+            val rawId = call.parameters["id"]
+            val id = try {
+                UUID.fromString(rawId)
+            } catch (e: Exception) {
+                return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Any>(false, "ID inválido")
+                )
+            }
+
             val tratamiento = service.getTratamientoById(id)
             if (tratamiento != null) {
                 call.respond(ApiResponse(true, "Tratamiento encontrado", tratamiento))
@@ -34,17 +44,31 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
         }
 
         get("/{id}/medicamentos") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(
-                HttpStatusCode.BadRequest, ApiResponse<Any>(false, "ID inválido")
-            )
+            val rawId = call.parameters["id"]
+            val id = try {
+                UUID.fromString(rawId)
+            } catch (e: Exception) {
+                return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Any>(false, "ID inválido")
+                )
+            }
+
             val medicamentos = service.getMedicamentosByTratamiento(id)
             call.respond(ApiResponse(true, "Medicamentos obtenidos", medicamentos))
         }
 
         get("/animalito/{animalitoId}") {
-            val animalitoId = call.parameters["animalitoId"]?.toIntOrNull() ?: return@get call.respond(
-                HttpStatusCode.BadRequest, ApiResponse<Any>(false, "ID inválido")
-            )
+            val rawId = call.parameters["animalitoId"]
+            val animalitoId = try {
+                UUID.fromString(rawId)
+            } catch (e: Exception) {
+                return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Any>(false, "ID inválido")
+                )
+            }
+
             val tratamientos = service.getTratamientosByAnimalito(animalitoId)
             call.respond(ApiResponse(true, "Tratamientos del animalito", tratamientos))
         }
@@ -53,31 +77,58 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
             try {
                 val request = call.receive<TratamientoRequest>()
                 val tratamiento = service.createTratamiento(request)
-                call.respond(HttpStatusCode.Created, ApiResponse(true, "Tratamiento creado", tratamiento))
+                call.respond(
+                    HttpStatusCode.Created,
+                    ApiResponse(true, "Tratamiento creado", tratamiento)
+                )
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, ApiResponse<Any>(false, e.message ?: "Error"))
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Any>(false, e.message ?: "Error")
+                )
             }
         }
 
         put("/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@put call.respond(
-                HttpStatusCode.BadRequest, ApiResponse<Any>(false, "ID inválido")
-            )
+            val rawId = call.parameters["id"]
+            val id = try {
+                UUID.fromString(rawId)
+            } catch (e: Exception) {
+                return@put call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Any>(false, "ID inválido")
+                )
+            }
+
             val receta = call.receive<Map<String, String>>()["receta"] ?: return@put call.respond(
                 HttpStatusCode.BadRequest, ApiResponse<Any>(false, "Receta requerida")
             )
+
             val updated = service.updateTratamiento(id, receta)
-            call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound,
-                ApiResponse(updated, if (updated) "Actualizado" else "No encontrado", null))
+
+            call.respond(
+                if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound,
+                ApiResponse(updated, if (updated) "Actualizado" else "No encontrado", null)
+            )
         }
 
         delete("/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respond(
-                HttpStatusCode.BadRequest, ApiResponse<Any>(false, "ID inválido")
-            )
+            val rawId = call.parameters["id"]
+            val id = try {
+                UUID.fromString(rawId)
+            } catch (e: Exception) {
+                return@delete call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Any>(false, "ID inválido")
+                )
+            }
+
             val deleted = service.deleteTratamiento(id)
-            call.respond(if (deleted) HttpStatusCode.OK else HttpStatusCode.NotFound,
-                ApiResponse(deleted, if (deleted) "Eliminado" else "No encontrado", null))
+
+            call.respond(
+                if (deleted) HttpStatusCode.OK else HttpStatusCode.NotFound,
+                ApiResponse(deleted, if (deleted) "Eliminado" else "No encontrado", null)
+            )
         }
     }
 }

@@ -12,13 +12,14 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
+import java.util.UUID
 
 interface AnimalRepository {
     suspend fun getAllAnimalitos(): List<Animalito>
-    suspend fun getAnimalitoById(id: Int): Animalito?
+    suspend fun getAnimalitoById(id: UUID): Animalito?
     suspend fun createAnimalito(request: AnimalitoRequest): Animalito?
-    suspend fun updateAnimalito(id: Int, request: AnimalitoRequest): Boolean
-    suspend fun deleteAnimalito(id: Int): Boolean
+    suspend fun updateAnimalito(id: UUID, request: AnimalitoRequest): Boolean
+    suspend fun deleteAnimalito(id: UUID): Boolean
     suspend fun getAnimalitosByEstado(estado: String): List<Animalito>
 }
 
@@ -33,14 +34,15 @@ class AnimalRepositoryImpl : AnimalRepository {
         edad = this[Animalitos.edad],
         especie = this[Animalitos.especie],
         estado = this[Animalitos.estado],
-        fechaSalida = this[Animalitos.fechaSalida]
+        fechaSalida = this[Animalitos.fechaSalida],
+        urlImage = this[Animalitos.urlImage],
     )
 
     override suspend fun getAllAnimalitos(): List<Animalito> = dbQuery {
         Animalitos.selectAll().map { it.toAnimalito() }
     }
 
-    override suspend fun getAnimalitoById(id: Int): Animalito? = dbQuery {
+    override suspend fun getAnimalitoById(id: UUID): Animalito? = dbQuery {
         Animalitos.select { Animalitos.id eq id }
             .map { it.toAnimalito() }
             .singleOrNull()
@@ -55,12 +57,13 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[edad] = request.edad
             it[especie] = request.especie
             it[estado] = request.estado
+            it[urlImage] = request.urlImage
         }
 
         insertStatement.resultedValues?.singleOrNull()?.toAnimalito()
     }
 
-    override suspend fun updateAnimalito(id: Int, request: AnimalitoRequest): Boolean = dbQuery {
+    override suspend fun updateAnimalito(id: UUID, request: AnimalitoRequest): Boolean = dbQuery {
         Animalitos.update({ Animalitos.id eq id }) {
             it[nombre] = request.nombre
             it[peso] = request.peso
@@ -69,13 +72,14 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[edad] = request.edad
             it[especie] = request.especie
             it[estado] = request.estado
+            it[urlImage] = request.urlImage
             if (request.estado == "Adoptado") {
                 it[fechaSalida] = Instant.now()
             }
         } > 0
     }
 
-    override suspend fun deleteAnimalito(id: Int): Boolean = dbQuery {
+    override suspend fun deleteAnimalito(id: UUID): Boolean = dbQuery {
         Animalitos.deleteWhere { Animalitos.id eq id } > 0
     }
 

@@ -32,7 +32,7 @@ fun Application.module() {
         allowMethod(io.ktor.http.HttpMethod.Delete)
         allowMethod(io.ktor.http.HttpMethod.Patch)
     }
-    
+
     configureSerialization()
     configureStatusPages()
     configureRouting()
