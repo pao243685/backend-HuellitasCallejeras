@@ -95,6 +95,7 @@ data class Cita(
     val id: UUID,
     @Contextual val fechaRealizacion: Instant,
     @Contextual val fechaCita: Instant,
+    val titulo: String,
     val motivo: String,
     val lugar: String,
     @Serializable(with = UUIDSerializer::class)
@@ -104,6 +105,7 @@ data class Cita(
 @Serializable
 data class CitaRequest(
     @Contextual val fechaCita: Instant,
+    val titulo: String,
     val motivo: String,
     val lugar: String,
     @Serializable(with = UUIDSerializer::class)
@@ -115,4 +117,23 @@ data class ApiResponse<T>(
     val success: Boolean,
     val message: String,
     val data: T? = null
+)
+
+@Serializable
+data class AnimalitoRescateRequest(
+    val animal: AnimalitoRequest,
+    val rescate: RescateRequestSinAnimalitoId
+)
+
+@Serializable
+data class RescateRequestSinAnimalitoId(
+    val lugar: String,
+    val descripcion: String
+
+)
+
+@Serializable
+data class AnimalitoRescateResponse(
+    val animal: Animalito,
+    val rescate: Rescate
 )

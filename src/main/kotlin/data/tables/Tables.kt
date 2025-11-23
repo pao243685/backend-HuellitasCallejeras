@@ -14,7 +14,7 @@ object Animalitos : Table("animalito") {
     val especie = varchar("especie", 250)
     val estado = varchar("estado", 250)
     val fechaSalida = timestamp("fecha_salida").nullable()
-    val urlImage = varchar("urlImage", 250)
+    val urlImage = varchar("urlimagen", 250)
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -65,6 +65,7 @@ object Citas : Table("citas") {
     val id = uuid("id_citas").clientDefault { UUID.randomUUID() }
     val fechaRealizacion = timestamp("fecha_realizacion")
     val fechaCita = timestamp("fecha_cita")
+    val titulo = varchar("titulo", 250)
     val motivo = varchar("motivo", 250)
     val lugar = varchar("lugar", 250)
     val animalitoId = uuid("animalito_id").references(Animalitos.id)

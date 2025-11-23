@@ -3,6 +3,8 @@ package com.example.domain.models.services
 import com.example.data.tables.repositories.AnimalRepository
 import com.example.domain.models.Animalito
 import com.example.domain.models.AnimalitoRequest
+import com.example.domain.models.AnimalitoRescateResponse
+import com.example.domain.models.RescateRequestSinAnimalitoId
 import java.util.UUID
 
 class AnimalService(private val repository: AnimalRepository) {
@@ -43,4 +45,33 @@ class AnimalService(private val repository: AnimalRepository) {
             "Estado inválido"
         }
     }
+
+
+    suspend fun createAnimalitoConRescate(
+        animalRequest: AnimalitoRequest,
+        rescateRequest: RescateRequestSinAnimalitoId
+    ): AnimalitoRescateResponse? {
+        validateAnimalitoRequest(animalRequest)
+        require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
+        require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
+
+        return repository.createAnimalitoConRescate(animalRequest, rescateRequest)
+    }
+
+    suspend fun updateAnimalitoConRescate(
+        animalId: UUID,
+        animalRequest: AnimalitoRequest,
+        rescateRequest: RescateRequestSinAnimalitoId
+    ): AnimalitoRescateResponse? {
+        validateAnimalitoRequest(animalRequest)
+        require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
+        require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
+
+        return repository.updateAnimalitoConRescate(animalId, animalRequest, rescateRequest)
+    }
+
+    suspend fun getAnimalitoConRescate(id: UUID): AnimalitoRescateResponse? {
+        return repository.getAnimalitoConRescate(id)
+    }
+
 }

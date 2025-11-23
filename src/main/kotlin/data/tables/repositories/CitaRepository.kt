@@ -31,6 +31,7 @@ class CitaRepositoryImpl : CitaRepository {
         id = this[Citas.id],
         fechaRealizacion = this[Citas.fechaRealizacion],
         fechaCita = this[Citas.fechaCita],
+        titulo = this[Citas.titulo],
         motivo = this[Citas.motivo],
         lugar = this[Citas.lugar],
         animalitoId = this[Citas.animalitoId]
@@ -62,6 +63,7 @@ class CitaRepositoryImpl : CitaRepository {
         val insertStatement = Citas.insert {
             it[fechaRealizacion] = Instant.now()
             it[fechaCita] = request.fechaCita
+            it[titulo] = request.titulo
             it[motivo] = request.motivo
             it[lugar] = request.lugar
             it[animalitoId] = request.animalitoId
@@ -73,6 +75,7 @@ class CitaRepositoryImpl : CitaRepository {
     override suspend fun updateCita(id: UUID, request: CitaRequest): Boolean = dbQuery {
         Citas.update({ Citas.id eq id }) {
             it[fechaCita] = request.fechaCita
+            it[titulo] = request.titulo
             it[motivo] = request.motivo
             it[lugar] = request.lugar
             it[animalitoId] = request.animalitoId
