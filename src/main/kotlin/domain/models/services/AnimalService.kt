@@ -41,7 +41,7 @@ class AnimalService(private val repository: AnimalRepository) {
         require(request.edad > 0) { "La edad debe ser mayor a 0" }
         require(request.sexo in listOf("Macho", "Hembra")) { "Sexo inválido" }
         require(request.especie.isNotBlank()) { "La especie no puede estar vacía" }
-        require(request.estado in listOf("En rescate", "En tratamiento", "Disponible", "Adoptado")) {
+        require(request.estado in listOf("En recuperación", "En adopción", "Adoptado")) {
             "Estado inválido"
         }
     }
