@@ -3,7 +3,7 @@ package com.example.data.tables.repositories
 import com.example.config.DatabaseFactory.dbQuery
 import com.example.domain.models.Cita
 import com.example.domain.models.CitaRequest
-import com.example.tables.Citas
+import com.example.data.tables.Citas
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq

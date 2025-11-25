@@ -3,7 +3,7 @@ package com.example.data.tables.repositories
 import com.example.config.DatabaseFactory.dbQuery
 import com.example.domain.models.Rescate
 import com.example.domain.models.RescateRequest
-import com.example.tables.Rescates
+import com.example.data.tables.Rescates
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere

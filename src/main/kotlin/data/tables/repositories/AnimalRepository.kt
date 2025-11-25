@@ -3,7 +3,7 @@ package com.example.data.tables.repositories
 import com.example.config.DatabaseFactory.dbQuery
 import com.example.domain.models.Animalito
 import com.example.domain.models.AnimalitoRequest
-import com.example.tables.Animalitos
+import com.example.data.tables.Animalitos
 import java.time.Instant
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq

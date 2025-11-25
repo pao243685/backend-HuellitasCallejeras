@@ -4,9 +4,9 @@ import com.example.config.DatabaseFactory.dbQuery
 import com.example.domain.models.MedicamentoTratamiento
 import com.example.domain.models.Tratamiento
 import com.example.domain.models.TratamientoRequest
-import com.example.tables.TratamientoAnimalito
-import com.example.tables.TratamientoMedicamento
-import com.example.tables.Tratamientos
+import com.example.data.tables.TratamientoAnimalito
+import com.example.data.tables.TratamientoMedicamento
+import com.example.data.tables.Tratamientos
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere

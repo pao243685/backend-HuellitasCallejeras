@@ -3,7 +3,7 @@ package com.example.data.tables.repositories
 import com.example.config.DatabaseFactory.dbQuery
 import com.example.domain.models.Medicamento
 import com.example.domain.models.MedicamentoRequest
-import com.example.tables.Medicamentos
+import com.example.data.tables.Medicamentos
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere

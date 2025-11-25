@@ -22,7 +22,6 @@ fun Application.configureSerialization() {
     }
 }
 
-// Serializer personalizado para java.time.Instant
 object InstantSerializer : kotlinx.serialization.KSerializer<Instant> {
     override val descriptor = kotlinx.serialization.descriptors.PrimitiveSerialDescriptor(
         "Instant",
