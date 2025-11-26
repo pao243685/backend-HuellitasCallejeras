@@ -1,7 +1,7 @@
 package com.example.presentation.routes
 
-import com.example.domain.models.AnimalitoRequest
-import com.example.domain.models.AnimalitoRescateRequest
+import com.example.domain.models.AnimalRequest
+import com.example.domain.models.AnimalRescateRequest
 import com.example.domain.models.ApiResponse
 import com.example.domain.models.services.AnimalService
 import io.ktor.http.HttpStatusCode
@@ -17,17 +17,17 @@ import java.util.UUID
 
 fun Route.animalRoutes(service: AnimalService) {
 
-    route("/animalitos") {
+    route("/animal") {
 
         get {
             try {
-                val animalitos = service.getAllAnimalitos()
+                val animal = service.getAllAnimal()
                 call.respond(
                     HttpStatusCode.OK,
                     ApiResponse(
                         success = true,
-                        message = "Animalitos obtenidos exitosamente",
-                        data = animalitos
+                        message = "Animal obtenidos exitosamente",
+                        data = animal
                     )
                 )
             } catch (e: Exception) {
@@ -35,7 +35,7 @@ fun Route.animalRoutes(service: AnimalService) {
                     HttpStatusCode.InternalServerError,
                     ApiResponse<Any>(
                         success = false,
-                        message = "Error al obtener animalitos: ${e.message}"
+                        message = "Error al obtener animal: ${e.message}"
                     )
                 )
             }
@@ -55,14 +55,14 @@ fun Route.animalRoutes(service: AnimalService) {
                     return@get
                 }
 
-                val animalito = service.getAnimalitoById(id)
-                if (animalito != null) {
+                val animal = service.getAnimalById(id)
+                if (animal != null) {
                     call.respond(
                         HttpStatusCode.OK,
                         ApiResponse(
                             success = true,
-                            message = "Animalito encontrado",
-                            data = animalito
+                            message = "Animal encontrado",
+                            data = animal
                         )
                     )
                 } else {
@@ -70,7 +70,7 @@ fun Route.animalRoutes(service: AnimalService) {
                         HttpStatusCode.NotFound,
                         ApiResponse<Any>(
                             success = false,
-                            message = "Animalito no encontrado"
+                            message = "Animal no encontrado"
                         )
                     )
                 }
@@ -88,13 +88,13 @@ fun Route.animalRoutes(service: AnimalService) {
         get("/estado/{estado}") {
             try {
                 val estado = call.parameters["estado"] ?: ""
-                val animalitos = service.getAnimalitosByEstado(estado)
+                val animales = service.getAnimalByEstado(estado)
                 call.respond(
                     HttpStatusCode.OK,
                     ApiResponse(
                         success = true,
-                        message = "Animalitos filtrados por estado",
-                        data = animalitos
+                        message = "Animales filtrados por estado",
+                        data = animales
                     )
                 )
             } catch (e: Exception) {
@@ -110,16 +110,16 @@ fun Route.animalRoutes(service: AnimalService) {
 
         post {
             try {
-                val request = call.receive<AnimalitoRequest>()
-                val animalito = service.createAnimalito(request)
+                val request = call.receive<AnimalRequest>()
+                val animal = service.createAnimal(request)
 
-                if (animalito != null) {
+                if (animal != null) {
                     call.respond(
                         HttpStatusCode.Created,
                         ApiResponse(
                             success = true,
-                            message = "Animalito creado exitosamente",
-                            data = animalito
+                            message = "Animal creado exitosamente",
+                            data = animal
                         )
                     )
                 } else {
@@ -127,7 +127,7 @@ fun Route.animalRoutes(service: AnimalService) {
                         HttpStatusCode.InternalServerError,
                         ApiResponse<Any>(
                             success = false,
-                            message = "Error al crear animalito"
+                            message = "Error al crear animal"
                         )
                     )
                 }
@@ -164,15 +164,15 @@ fun Route.animalRoutes(service: AnimalService) {
                     return@put
                 }
 
-                val request = call.receive<AnimalitoRequest>()
-                val updated = service.updateAnimalito(id, request)
+                val request = call.receive<AnimalRequest>()
+                val updated = service.updateAnimal(id, request)
 
                 if (updated) {
                     call.respond(
                         HttpStatusCode.OK,
                         ApiResponse(
                             success = true,
-                            message = "Animalito actualizado exitosamente",
+                            message = "Animal actualizado exitosamente",
                             data = null
                         )
                     )
@@ -181,7 +181,7 @@ fun Route.animalRoutes(service: AnimalService) {
                         HttpStatusCode.NotFound,
                         ApiResponse<Any>(
                             success = false,
-                            message = "Animalito no encontrado"
+                            message = "Animal no encontrado"
                         )
                     )
                 }
@@ -218,14 +218,14 @@ fun Route.animalRoutes(service: AnimalService) {
                     return@delete
                 }
 
-                val deleted = service.deleteAnimalito(id)
+                val deleted = service.deleteAnimal(id)
 
                 if (deleted) {
                     call.respond(
                         HttpStatusCode.OK,
                         ApiResponse(
                             success = true,
-                            message = "Animalito eliminado exitosamente",
+                            message = "Animal eliminado exitosamente",
                             data = null
                         )
                     )
@@ -234,7 +234,7 @@ fun Route.animalRoutes(service: AnimalService) {
                         HttpStatusCode.NotFound,
                         ApiResponse<Any>(
                             success = false,
-                            message = "Animalito no encontrado"
+                            message = "Animal no encontrado"
                         )
                     )
                 }
@@ -251,15 +251,15 @@ fun Route.animalRoutes(service: AnimalService) {
 
                 post("/crear-con-rescate") {
                     try {
-                        val request = call.receive<AnimalitoRescateRequest>()
-                        val resultado = service.createAnimalitoConRescate(request.animal, request.rescate)
+                        val request = call.receive<AnimalRescateRequest>()
+                        val resultado = service.createAnimalConRescate(request.animal, request.rescate)
 
                         if (resultado != null) {
                             call.respond(
                                 HttpStatusCode.Created,
                                 ApiResponse(
                                     success = true,
-                                    message = "Animalito y rescate creados exitosamente",
+                                    message = "Animal y rescate creados exitosamente",
                                     data = resultado
                                 )
                             )
@@ -268,7 +268,7 @@ fun Route.animalRoutes(service: AnimalService) {
                                 HttpStatusCode.InternalServerError,
                                 ApiResponse<Any>(
                                     success = false,
-                                    message = "Error al crear animalito y rescate"
+                                    message = "Error al crear animal y rescate"
                                 )
                             )
                         }
@@ -305,15 +305,14 @@ fun Route.animalRoutes(service: AnimalService) {
                             return@put
                         }
 
-                        val request = call.receive<AnimalitoRescateRequest>()
-                        val resultado = service.updateAnimalitoConRescate(id, request.animal, request.rescate)
-
+                        val request = call.receive<AnimalRescateRequest>()
+                        val resultado = service.updateAnimalConRescate(id, request.animal, request.rescate)
                         if (resultado != null) {
                             call.respond(
                                 HttpStatusCode.OK,
                                 ApiResponse(
                                     success = true,
-                                    message = "Animalito y rescate actualizados exitosamente",
+                                    message = "Animal y rescate actualizados exitosamente",
                                     data = resultado
                                 )
                             )
@@ -322,7 +321,7 @@ fun Route.animalRoutes(service: AnimalService) {
                                 HttpStatusCode.NotFound,
                                 ApiResponse<Any>(
                                     success = false,
-                                    message = "Animalito no encontrado"
+                                    message = "Animal no encontrado"
                                 )
                             )
                         }
@@ -359,13 +358,13 @@ fun Route.animalRoutes(service: AnimalService) {
                             return@get
                         }
 
-                        val resultado = service.getAnimalitoConRescate(id)
+                        val resultado = service.getAnimalConRescate(id)
                         if (resultado != null) {
                             call.respond(
                                 HttpStatusCode.OK,
                                 ApiResponse(
                                     success = true,
-                                    message = "Animalito y rescate encontrados",
+                                    message = "Animal y rescate encontrados",
                                     data = resultado
                                 )
                             )
@@ -374,7 +373,7 @@ fun Route.animalRoutes(service: AnimalService) {
                                 HttpStatusCode.NotFound,
                                 ApiResponse<Any>(
                                     success = false,
-                                    message = "Animalito no encontrado"
+                                    message = "Animal no encontrado"
                                 )
                             )
                         }

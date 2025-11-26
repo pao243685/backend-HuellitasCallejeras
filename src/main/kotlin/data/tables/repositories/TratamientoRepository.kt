@@ -4,7 +4,7 @@ import com.example.config.DatabaseFactory.dbQuery
 import com.example.domain.models.MedicamentoTratamiento
 import com.example.domain.models.Tratamiento
 import com.example.domain.models.TratamientoRequest
-import com.example.data.tables.TratamientoAnimalito
+import com.example.data.tables.TratamientoAnimal
 import com.example.data.tables.TratamientoMedicamento
 import com.example.data.tables.Tratamientos
 import org.jetbrains.exposed.sql.ResultRow
@@ -21,7 +21,7 @@ import java.util.UUID
 interface TratamientoRepository {
     suspend fun getAllTratamientos(): List<Tratamiento>
     suspend fun getTratamientoById(id: UUID): Tratamiento?
-    suspend fun getTratamientosByAnimalito(animalitoId: UUID): List<Tratamiento>
+    suspend fun getTratamientosByAnimal(animalId: UUID): List<Tratamiento>
     suspend fun createTratamiento(request: TratamientoRequest): Tratamiento?
     suspend fun updateTratamiento(id: UUID, receta: String): Boolean
     suspend fun deleteTratamiento(id: UUID): Boolean
@@ -46,9 +46,9 @@ class TratamientoRepositoryImpl : TratamientoRepository {
             .singleOrNull()
     }
 
-    override suspend fun getTratamientosByAnimalito(animalitoId: UUID): List<Tratamiento> = dbQuery {
-        (Tratamientos innerJoin TratamientoAnimalito)
-            .select { TratamientoAnimalito.animalitoId eq animalitoId }
+    override suspend fun getTratamientosByAnimal(animalId: UUID): List<Tratamiento> = dbQuery {
+        (Tratamientos innerJoin TratamientoAnimal)
+            .select { TratamientoAnimal.animalId eq animalId }
             .map {
                 Tratamiento(
                     id = it[Tratamientos.id],
@@ -64,10 +64,10 @@ class TratamientoRepositoryImpl : TratamientoRepository {
             it[receta] = request.receta
         }[Tratamientos.id]
 
-        // Asociar con animalito
-        TratamientoAnimalito.insert {
-            it[animalitoId] = request.animalitoId
-            it[TratamientoAnimalito.tratamientoId] = tratamientoId
+        // Asociar con animal
+        TratamientoAnimal.insert {
+            it[animalId] = request.animalId
+            it[TratamientoAnimal.tratamientoId] = tratamientoId
         }
 
         // Asociar medicamentos
@@ -92,7 +92,7 @@ class TratamientoRepositoryImpl : TratamientoRepository {
 
     override suspend fun deleteTratamiento(id: UUID): Boolean = dbQuery {
         TratamientoMedicamento.deleteWhere { tratamientoId eq id }
-        TratamientoAnimalito.deleteWhere { tratamientoId eq id }
+        TratamientoAnimal.deleteWhere { tratamientoId eq id }
         Tratamientos.deleteWhere { Tratamientos.id eq id } > 0
     }
 

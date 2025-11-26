@@ -11,8 +11,8 @@ class RescateService(private val repository: RescateRepository) {
 
     suspend fun getRescateById(id: UUID) = repository.getRescateById(id)
 
-    suspend fun getRescatesByAnimalito(animalitoId: UUID) =
-        repository.getRescatesByAnimalito(animalitoId)
+    suspend fun getRescatesByAnimal(animalId: UUID) =
+        repository.getRescatesByAnimal(animalId)
 
     suspend fun createRescate(request: RescateRequest): Rescate? {
         require(request.lugar.isNotBlank()) { "El lugar no puede estar vacío" }

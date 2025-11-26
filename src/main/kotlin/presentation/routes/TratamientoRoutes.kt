@@ -12,7 +12,6 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
-import kotlin.text.toIntOrNull
 
 import java.util.UUID
 
@@ -58,9 +57,9 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
             call.respond(ApiResponse(true, "Medicamentos obtenidos", medicamentos))
         }
 
-        get("/animalito/{animalitoId}") {
-            val rawId = call.parameters["animalitoId"]
-            val animalitoId = try {
+        get("/animal/{animalId}") {
+            val rawId = call.parameters["animalId"]
+            val animalId = try {
                 UUID.fromString(rawId)
             } catch (e: Exception) {
                 return@get call.respond(
@@ -69,8 +68,8 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                 )
             }
 
-            val tratamientos = service.getTratamientosByAnimalito(animalitoId)
-            call.respond(ApiResponse(true, "Tratamientos del animalito", tratamientos))
+            val tratamientos = service.getTratamientosByAnimal(animalId)
+            call.respond(ApiResponse(true, "Tratamientos del animal", tratamientos))
         }
 
         post {

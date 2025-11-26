@@ -1,10 +1,13 @@
 package com.example.domain.models
 
+import com.example.UUIDSerializer
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 @Serializable
 data class Medicamento(
-    val id: Int = 0,
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID,
     val nombre: String
 )
 

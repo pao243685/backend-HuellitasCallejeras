@@ -17,7 +17,7 @@ import java.util.UUID
 interface RescateRepository {
     suspend fun getAllRescates(): List<Rescate>
     suspend fun getRescateById(id: UUID): Rescate?
-    suspend fun getRescatesByAnimalito(animalitoId: UUID): List<Rescate>
+    suspend fun getRescatesByAnimal(animalId: UUID): List<Rescate>
     suspend fun createRescate(request: RescateRequest): Rescate?
     suspend fun updateRescate(id: UUID, request: RescateRequest): Boolean
     suspend fun deleteRescate(id: UUID): Boolean
@@ -30,7 +30,7 @@ class RescateRepositoryImpl : RescateRepository {
         fechaIngreso = this[Rescates.fechaIngreso],
         lugar = this[Rescates.lugar],
         descripcion = this[Rescates.descripcion],
-        animalitoId = this[Rescates.animalitoId]
+        animalId = this[Rescates.animalId]
     )
 
     override suspend fun getAllRescates(): List<Rescate> = dbQuery {
@@ -43,8 +43,8 @@ class RescateRepositoryImpl : RescateRepository {
             .singleOrNull()
     }
 
-    override suspend fun getRescatesByAnimalito(animalitoId: UUID): List<Rescate> = dbQuery {
-        Rescates.select { Rescates.animalitoId eq animalitoId }
+    override suspend fun getRescatesByAnimal(animalId: UUID): List<Rescate> = dbQuery {
+        Rescates.select { Rescates.animalId eq animalId }
             .map { it.toRescate() }
     }
 
@@ -53,7 +53,7 @@ class RescateRepositoryImpl : RescateRepository {
             it[fechaIngreso] = Instant.now()
             it[lugar] = request.lugar
             it[descripcion] = request.descripcion
-            it[animalitoId] = request.animalitoId
+            it[animalId] = request.animalId
         }
 
         insertStatement.resultedValues?.singleOrNull()?.toRescate()
@@ -63,7 +63,7 @@ class RescateRepositoryImpl : RescateRepository {
         Rescates.update({ Rescates.id eq id }) {
             it[lugar] = request.lugar
             it[descripcion] = request.descripcion
-            it[animalitoId] = request.animalitoId
+            it[animalId] = request.animalId
         } > 0
     }
 

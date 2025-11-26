@@ -11,8 +11,8 @@ class CitaService(private val repository: CitaRepository) {
 
     suspend fun getCitaById(id: UUID) = repository.getCitaById(id)
 
-    suspend fun getCitasByAnimalito(animalitoId: UUID) =
-        repository.getCitasByAnimalito(animalitoId)
+    suspend fun getCitasByAnimal(animalId: UUID) =
+        repository.getCitasByAnimal(animalId)
 
     suspend fun getCitasPendientes() = repository.getCitasPendientes()
 

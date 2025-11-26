@@ -13,7 +13,6 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import java.util.UUID
-import kotlin.text.toIntOrNull
 
 fun Route.citaRoutes(service: CitaService) {
     route("/citas") {
@@ -50,9 +49,9 @@ fun Route.citaRoutes(service: CitaService) {
             }
         }
 
-        get("/animalito/{animalitoId}") {
-            val idParam = call.parameters["animalitoId"]
-            val animalitoId = try {
+        get("/animal/{animalId}") {
+            val idParam = call.parameters["animalId"]
+            val animalId = try {
                 UUID.fromString(idParam)
             } catch (e: Exception) {
                 return@get call.respond(
@@ -61,8 +60,8 @@ fun Route.citaRoutes(service: CitaService) {
                 )
             }
 
-            val citas = service.getCitasByAnimalito(animalitoId)
-            call.respond(ApiResponse(true, "Citas del animalito", citas))
+            val citas = service.getCitasByAnimal(animalId)
+            call.respond(ApiResponse(true, "Citas del animal", citas))
         }
 
         post {

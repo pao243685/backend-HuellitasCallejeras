@@ -1,41 +1,41 @@
 package com.example.domain.models.services
 
 import com.example.data.tables.repositories.AnimalRepository
-import com.example.domain.models.Animalito
-import com.example.domain.models.AnimalitoRequest
-import com.example.domain.models.AnimalitoRescateResponse
-import com.example.domain.models.RescateRequestSinAnimalitoId
+import com.example.domain.models.Animal
+import com.example.domain.models.AnimalRequest
+import com.example.domain.models.AnimalRescateResponse
+import com.example.domain.models.RescateRequestSinAnimalId
 import java.util.UUID
 
 class AnimalService(private val repository: AnimalRepository) {
 
-    suspend fun getAllAnimalitos(): List<Animalito> {
-        return repository.getAllAnimalitos()
+    suspend fun getAllAnimal(): List<Animal> {
+        return repository.getAllAnimal()
     }
 
-    suspend fun getAnimalitoById(id: UUID): Animalito? {
-        return repository.getAnimalitoById(id)
+    suspend fun getAnimalById(id: UUID): Animal? {
+        return repository.getAnimalById(id)
     }
 
-    suspend fun createAnimalito(request: AnimalitoRequest): Animalito? {
-        validateAnimalitoRequest(request)
-        return repository.createAnimalito(request)
+    suspend fun createAnimal(request: AnimalRequest): Animal? {
+        validateAnimalRequest(request)
+        return repository.createAnimal(request)
     }
 
-    suspend fun updateAnimalito(id: UUID, request: AnimalitoRequest): Boolean {
-        validateAnimalitoRequest(request)
-        return repository.updateAnimalito(id, request)
+    suspend fun updateAnimal(id: UUID, request: AnimalRequest): Boolean {
+        validateAnimalRequest(request)
+        return repository.updateAnimal(id, request)
     }
 
-    suspend fun deleteAnimalito(id: UUID): Boolean {
-        return repository.deleteAnimalito(id)
+    suspend fun deleteAnimal(id: UUID): Boolean {
+        return repository.deleteAnimal(id)
     }
 
-    suspend fun getAnimalitosByEstado(estado: String): List<Animalito> {
-        return repository.getAnimalitosByEstado(estado)
+    suspend fun getAnimalByEstado(estado: String): List<Animal> {
+        return repository.getAnimalByEstado(estado)
     }
 
-    private fun validateAnimalitoRequest(request: AnimalitoRequest) {
+    private fun validateAnimalRequest(request: AnimalRequest) {
         require(request.nombre.isNotBlank()) { "El nombre no puede estar vacío" }
         require(request.peso > 0) { "El peso debe ser mayor a 0" }
         require(request.edad > 0) { "La edad debe ser mayor a 0" }
@@ -47,31 +47,31 @@ class AnimalService(private val repository: AnimalRepository) {
     }
 
 
-    suspend fun createAnimalitoConRescate(
-        animalRequest: AnimalitoRequest,
-        rescateRequest: RescateRequestSinAnimalitoId
-    ): AnimalitoRescateResponse? {
-        validateAnimalitoRequest(animalRequest)
+    suspend fun createAnimalConRescate(
+        animalRequest: AnimalRequest,
+        rescateRequest: RescateRequestSinAnimalId
+    ): AnimalRescateResponse? {
+        validateAnimalRequest(animalRequest)
         require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
         require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
 
-        return repository.createAnimalitoConRescate(animalRequest, rescateRequest)
+        return repository.createAnimalConRescate(animalRequest, rescateRequest)
     }
 
-    suspend fun updateAnimalitoConRescate(
+    suspend fun updateAnimalConRescate(
         animalId: UUID,
-        animalRequest: AnimalitoRequest,
-        rescateRequest: RescateRequestSinAnimalitoId
-    ): AnimalitoRescateResponse? {
-        validateAnimalitoRequest(animalRequest)
+        animalRequest: AnimalRequest,
+        rescateRequest: RescateRequestSinAnimalId
+    ): AnimalRescateResponse? {
+        validateAnimalRequest(animalRequest)
         require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
         require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
 
-        return repository.updateAnimalitoConRescate(animalId, animalRequest, rescateRequest)
+        return repository.updateAnimalConRescate(animalId, animalRequest, rescateRequest)
     }
 
-    suspend fun getAnimalitoConRescate(id: UUID): AnimalitoRescateResponse? {
-        return repository.getAnimalitoConRescate(id)
+    suspend fun getAnimalConRescate(id: UUID): AnimalRescateResponse? {
+        return repository.getAnimalConRescate(id)
     }
 
 }

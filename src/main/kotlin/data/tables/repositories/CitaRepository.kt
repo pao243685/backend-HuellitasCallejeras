@@ -18,7 +18,7 @@ import java.util.UUID
 interface CitaRepository {
     suspend fun getAllCitas(): List<Cita>
     suspend fun getCitaById(id: UUID): Cita?
-    suspend fun getCitasByAnimalito(animalitoId: UUID): List<Cita>
+    suspend fun getCitasByAnimal(animalId: UUID): List<Cita>
     suspend fun getCitasPendientes(): List<Cita>
     suspend fun createCita(request: CitaRequest): Cita?
     suspend fun updateCita(id: UUID, request: CitaRequest): Boolean
@@ -34,7 +34,7 @@ class CitaRepositoryImpl : CitaRepository {
         titulo = this[Citas.titulo],
         motivo = this[Citas.motivo],
         lugar = this[Citas.lugar],
-        animalitoId = this[Citas.animalitoId]
+        animalId = this[Citas.animalId]
     )
 
     override suspend fun getAllCitas(): List<Cita> = dbQuery {
@@ -47,8 +47,8 @@ class CitaRepositoryImpl : CitaRepository {
             .singleOrNull()
     }
 
-    override suspend fun getCitasByAnimalito(animalitoId: UUID): List<Cita> = dbQuery {
-        Citas.select { Citas.animalitoId eq animalitoId }
+    override suspend fun getCitasByAnimal(animalId: UUID): List<Cita> = dbQuery {
+        Citas.select { Citas.animalId eq animalId }
             .orderBy(Citas.fechaCita to SortOrder.DESC)
             .map { it.toCita() }
     }
@@ -66,7 +66,7 @@ class CitaRepositoryImpl : CitaRepository {
             it[titulo] = request.titulo
             it[motivo] = request.motivo
             it[lugar] = request.lugar
-            it[animalitoId] = request.animalitoId
+            it[animalId] = request.animalId
         }
 
         insertStatement.resultedValues?.singleOrNull()?.toCita()
@@ -78,7 +78,7 @@ class CitaRepositoryImpl : CitaRepository {
             it[titulo] = request.titulo
             it[motivo] = request.motivo
             it[lugar] = request.lugar
-            it[animalitoId] = request.animalitoId
+            it[animalId] = request.animalId
         } > 0
     }
 

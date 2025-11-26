@@ -22,14 +22,14 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 
 fun Application.configureRouting() {
-    val animalitoRepository = AnimalRepositoryImpl()
+    val animalRepository = AnimalRepositoryImpl()
     val rescateRepository = RescateRepositoryImpl()
     val tratamientoRepository = TratamientoRepositoryImpl()
     val medicamentoRepository = MedicamentoRepositoryImpl()
     val citaRepository = CitaRepositoryImpl()
 
     // Inicializar servicios
-    val animalitoService = AnimalService(animalitoRepository)
+    val animalService = AnimalService(animalRepository)
     val rescateService = RescateService(rescateRepository)
     val tratamientoService = TratamientoService(tratamientoRepository)
     val medicamentoService = MedicamentoService(medicamentoRepository)
@@ -38,7 +38,7 @@ fun Application.configureRouting() {
     routing {
         route("/api") {
             // Rutas de la API
-            animalRoutes(animalitoService)
+            animalRoutes(animalService)
             rescateRoutes(rescateService)
             tratamientoRoutes(tratamientoService)
             medicamentoRoutes(medicamentoService)

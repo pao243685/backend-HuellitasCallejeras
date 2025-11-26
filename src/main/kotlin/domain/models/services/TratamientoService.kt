@@ -11,8 +11,8 @@ class TratamientoService(private val repository: TratamientoRepository) {
 
     suspend fun getTratamientoById(id: UUID) = repository.getTratamientoById(id)
 
-    suspend fun getTratamientosByAnimalito(animalitoId: UUID) =
-        repository.getTratamientosByAnimalito(animalitoId)
+    suspend fun getTratamientosByAnimal(animalId: UUID) =
+        repository.getTratamientosByAnimal(animalId)
 
     suspend fun createTratamiento(request: TratamientoRequest): Tratamiento? {
         require(request.receta.isNotBlank()) { "La receta no puede estar vacía" }

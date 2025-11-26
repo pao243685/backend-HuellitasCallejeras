@@ -13,7 +13,6 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import java.util.UUID
-import kotlin.text.toIntOrNull
 
 fun Route.rescateRoutes(service: RescateService) {
     route("/rescates") {
@@ -45,10 +44,10 @@ fun Route.rescateRoutes(service: RescateService) {
             }
         }
 
-        get("/animalito/{animalitoId}") {
-            val animalitoIdParam = call.parameters["animalitoId"]
-            val animalitoId = try {
-                UUID.fromString(animalitoIdParam)
+        get("/animal/{animalId}") {
+            val animalIdParam = call.parameters["animalId"]
+            val animalId = try {
+                UUID.fromString(animalIdParam)
             } catch (e: Exception) {
                 return@get call.respond(
                     HttpStatusCode.BadRequest,
@@ -56,8 +55,8 @@ fun Route.rescateRoutes(service: RescateService) {
                 )
             }
 
-            val rescates = service.getRescatesByAnimalito(animalitoId)
-            call.respond(ApiResponse(true, "Rescates del animalito", rescates))
+            val rescates = service.getRescatesByAnimal(animalId)
+            call.respond(ApiResponse(true, "Rescates del animal", rescates))
         }
 
         post {

@@ -1,13 +1,13 @@
 package com.example.data.tables.repositories
 
 import com.example.config.DatabaseFactory.dbQuery
-import com.example.domain.models.Animalito
-import com.example.domain.models.AnimalitoRequest
-import com.example.domain.models.AnimalitoRescateResponse
+import com.example.domain.models.Animal
+import com.example.domain.models.AnimalRequest
+import com.example.domain.models.AnimalRescateResponse
 import com.example.domain.models.Rescate
-import com.example.domain.models.RescateRequestSinAnimalitoId
-import com.example.tables.Animalitos
-import com.example.tables.Rescates
+import com.example.domain.models.RescateRequestSinAnimalId
+import com.example.data.tables.Rescates
+import com.example.data.tables.animal
 import java.time.Instant
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -19,53 +19,53 @@ import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
 interface AnimalRepository {
-    suspend fun getAllAnimalitos(): List<Animalito>
-    suspend fun getAnimalitoById(id: UUID): Animalito?
-    suspend fun createAnimalito(request: AnimalitoRequest): Animalito?
-    suspend fun updateAnimalito(id: UUID, request: AnimalitoRequest): Boolean
-    suspend fun deleteAnimalito(id: UUID): Boolean
-    suspend fun getAnimalitosByEstado(estado: String): List<Animalito>
-    suspend fun createAnimalitoConRescate(
-        animalRequest: AnimalitoRequest,
-        rescateRequest: RescateRequestSinAnimalitoId
-    ): AnimalitoRescateResponse?
+    suspend fun getAllAnimal(): List<Animal>
+    suspend fun getAnimalById(id: UUID): Animal?
+    suspend fun createAnimal(request: AnimalRequest): Animal?
+    suspend fun updateAnimal(id: UUID, request: AnimalRequest): Boolean
+    suspend fun deleteAnimal(id: UUID): Boolean
+    suspend fun getAnimalByEstado(estado: String): List<Animal>
+    suspend fun createAnimalConRescate(
+        animalRequest: AnimalRequest,
+        rescateRequest: RescateRequestSinAnimalId
+    ): AnimalRescateResponse?
 
-    suspend fun updateAnimalitoConRescate(
+    suspend fun updateAnimalConRescate(
         animalId: UUID,
-        animalRequest: AnimalitoRequest,
-        rescateRequest: RescateRequestSinAnimalitoId
-    ): AnimalitoRescateResponse?
+        animalRequest: AnimalRequest,
+        rescateRequest: RescateRequestSinAnimalId
+    ): AnimalRescateResponse?
 
-    suspend fun getAnimalitoConRescate(animalId: UUID): AnimalitoRescateResponse?
+    suspend fun getAnimalConRescate(animalId: UUID): AnimalRescateResponse?
 }
 
 class AnimalRepositoryImpl : AnimalRepository {
 
-    private fun ResultRow.toAnimalito() = Animalito(
-        id = this[Animalitos.id],
-        nombre = this[Animalitos.nombre],
-        peso = this[Animalitos.peso],
-        raza = this[Animalitos.raza],
-        sexo = this[Animalitos.sexo],
-        edad = this[Animalitos.edad],
-        especie = this[Animalitos.especie],
-        estado = this[Animalitos.estado],
-        fechaSalida = this[Animalitos.fechaSalida],
-        urlImage = this[Animalitos.urlImage],
+    private fun ResultRow.toAnimal() = Animal(
+        id = this[animal.id],
+        nombre = this[animal.nombre],
+        peso = this[animal.peso],
+        raza = this[animal.raza],
+        sexo = this[animal.sexo],
+        edad = this[animal.edad],
+        especie = this[animal.especie],
+        estado = this[animal.estado],
+        fechaSalida = this[animal.fechaSalida],
+        urlImage = this[animal.urlImage],
     )
 
-    override suspend fun getAllAnimalitos(): List<Animalito> = dbQuery {
-        Animalitos.selectAll().map { it.toAnimalito() }
+    override suspend fun getAllAnimal(): List<Animal> = dbQuery {
+        animal.selectAll().map { it.toAnimal() }
     }
 
-    override suspend fun getAnimalitoById(id: UUID): Animalito? = dbQuery {
-        Animalitos.select { Animalitos.id eq id }
-            .map { it.toAnimalito() }
+    override suspend fun getAnimalById(id: UUID): Animal? = dbQuery {
+        animal.select { animal.id eq id }
+            .map { it.toAnimal() }
             .singleOrNull()
     }
 
-    override suspend fun createAnimalito(request: AnimalitoRequest): Animalito? = dbQuery {
-        val insertStatement = Animalitos.insert {
+    override suspend fun createAnimal(request: AnimalRequest): Animal? = dbQuery {
+        val insertStatement = animal.insert {
             it[nombre] = request.nombre
             it[peso] = request.peso
             it[raza] = request.raza
@@ -76,11 +76,11 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[urlImage] = request.urlImage
         }
 
-        insertStatement.resultedValues?.singleOrNull()?.toAnimalito()
+        insertStatement.resultedValues?.singleOrNull()?.toAnimal()
     }
 
-    override suspend fun updateAnimalito(id: UUID, request: AnimalitoRequest): Boolean = dbQuery {
-        Animalitos.update({ Animalitos.id eq id }) {
+    override suspend fun updateAnimal(id: UUID, request: AnimalRequest): Boolean = dbQuery {
+        animal.update({ animal.id eq id }) {
             it[nombre] = request.nombre
             it[peso] = request.peso
             it[raza] = request.raza
@@ -95,22 +95,22 @@ class AnimalRepositoryImpl : AnimalRepository {
         } > 0
     }
 
-    override suspend fun deleteAnimalito(id: UUID): Boolean = dbQuery {
-        Animalitos.deleteWhere { Animalitos.id eq id } > 0
+    override suspend fun deleteAnimal(id: UUID): Boolean = dbQuery {
+        animal.deleteWhere { animal.id eq id } > 0
     }
 
-    override suspend fun getAnimalitosByEstado(estado: String): List<Animalito> = dbQuery {
-        Animalitos.select { Animalitos.estado eq estado }
-            .map { it.toAnimalito() }
+    override suspend fun getAnimalByEstado(estado: String): List<Animal> = dbQuery {
+        animal.select { animal.estado eq estado }
+            .map { it.toAnimal() }
     }
 
-    override suspend fun createAnimalitoConRescate(
-        animalRequest: AnimalitoRequest,
-        rescateRequest: RescateRequestSinAnimalitoId
-    ): AnimalitoRescateResponse? = dbQuery {
+    override suspend fun createAnimalConRescate(
+        animalRequest: AnimalRequest,
+        rescateRequest: RescateRequestSinAnimalId
+    ): AnimalRescateResponse? = dbQuery {
         val transactionResult = try {
-            // 1. Crear el animalito
-            val animalitoInsert = Animalitos.insert {
+            // 1. Crear el animal
+            val animalInsert = animal.insert {
                 it[nombre] = animalRequest.nombre
                 it[peso] = animalRequest.peso
                 it[raza] = animalRequest.raza
@@ -121,17 +121,17 @@ class AnimalRepositoryImpl : AnimalRepository {
                 it[urlImage] = animalRequest.urlImage
             }
 
-            val NanimalitoId = animalitoInsert[Animalitos.id]
+            val animalId = animalInsert[animal.id]
 
             val rescateInsert = Rescates.insert {
                 it[fechaIngreso] = Instant.now()
                 it[lugar] = rescateRequest.lugar
                 it[descripcion] = rescateRequest.descripcion
-                it[animalitoId] =  NanimalitoId
+                it[this.animalId] =  animalId
             }
 
-            val animalitoCreado = animalitoInsert.resultedValues?.singleOrNull()?.toAnimalito()
-                ?: throw Exception("Error al obtener animalito creado")
+            val animalCreado = animalInsert.resultedValues?.singleOrNull()?.toAnimal()
+                ?: throw Exception("Error al obtener animal creado")
 
             val rescateCreado = rescateInsert.resultedValues?.singleOrNull()?.let { row ->
                 Rescate(
@@ -139,11 +139,11 @@ class AnimalRepositoryImpl : AnimalRepository {
                     fechaIngreso = row[Rescates.fechaIngreso],
                     lugar = row[Rescates.lugar],
                     descripcion = row[Rescates.descripcion],
-                    animalitoId = row[Rescates.animalitoId]
+                    animalId = row[Rescates.animalId]
                 )
             } ?: throw Exception("Error al crear rescate")
 
-            AnimalitoRescateResponse(animalitoCreado, rescateCreado)
+            AnimalRescateResponse(animalCreado, rescateCreado)
 
         } catch (e: Exception) {
             throw e
@@ -151,13 +151,13 @@ class AnimalRepositoryImpl : AnimalRepository {
 
         transactionResult
     }
-    override suspend fun updateAnimalitoConRescate(
+    override suspend fun updateAnimalConRescate(
         animalId: UUID,
-        animalRequest: AnimalitoRequest,
-        rescateRequest: RescateRequestSinAnimalitoId
-    ): AnimalitoRescateResponse? = dbQuery {
+        animalRequest: AnimalRequest,
+        rescateRequest: RescateRequestSinAnimalId
+    ): AnimalRescateResponse? = dbQuery {
 
-        val animalitoActualizado = Animalitos.update({ Animalitos.id eq animalId }) {
+        val animalActualizado = animal.update({ animal.id eq animalId }) {
             it[nombre] = animalRequest.nombre
             it[peso] = animalRequest.peso
             it[raza] = animalRequest.raza
@@ -171,16 +171,16 @@ class AnimalRepositoryImpl : AnimalRepository {
             }
         } > 0
 
-        if (!animalitoActualizado) {
+        if (!animalActualizado) {
             return@dbQuery null
         }
 
 
-        val rescateExistente = Rescates.select { Rescates.animalitoId eq animalId }.singleOrNull()
+        val rescateExistente = Rescates.select { Rescates.animalId eq animalId }.singleOrNull()
 
         val rescateActualizado = if (rescateExistente != null) {
 
-            Rescates.update({ Rescates.animalitoId eq animalId }) {
+            Rescates.update({ Rescates.animalId eq animalId }) {
                 it[lugar] = rescateRequest.lugar
                 it[descripcion] = rescateRequest.descripcion
             } > 0
@@ -190,7 +190,6 @@ class AnimalRepositoryImpl : AnimalRepository {
                 it[fechaIngreso] = Instant.now()
                 it[lugar] = rescateRequest.lugar
                 it[descripcion] = rescateRequest.descripcion
-                it[animalitoId] = animalId
             }.insertedCount > 0
         }
 
@@ -198,26 +197,26 @@ class AnimalRepositoryImpl : AnimalRepository {
             return@dbQuery null
         }
 
-        val animalito = getAnimalitoById(animalId)
-        val rescate = Rescates.select { Rescates.animalitoId eq animalId }
+        val animal = getAnimalById(animalId)
+        val rescate = Rescates.select { Rescates.animalId eq animalId }
             .map { it.toRescate() }
             .singleOrNull()
 
-        if (animalito != null && rescate != null) {
-            AnimalitoRescateResponse(animalito, rescate)
+        if (animal != null && rescate != null) {
+            AnimalRescateResponse(animal, rescate)
         } else {
             null
         }
     }
 
-    override suspend fun getAnimalitoConRescate(animalId: UUID): AnimalitoRescateResponse? = dbQuery {
-        val animalito = getAnimalitoById(animalId)
-        val rescate = Rescates.select { Rescates.animalitoId eq animalId }
+    override suspend fun getAnimalConRescate(animalId: UUID): AnimalRescateResponse? = dbQuery {
+        val animal = getAnimalById(animalId)
+        val rescate = Rescates.select { Rescates.animalId eq animalId }
             .map { it.toRescate() }
             .singleOrNull()
 
-        if (animalito != null && rescate != null) {
-            AnimalitoRescateResponse(animalito, rescate)
+        if (animal != null && rescate != null) {
+            AnimalRescateResponse(animal, rescate)
         } else {
             null
         }
@@ -228,7 +227,7 @@ class AnimalRepositoryImpl : AnimalRepository {
         fechaIngreso = this[Rescates.fechaIngreso],
         lugar = this[Rescates.lugar],
         descripcion = this[Rescates.descripcion],
-        animalitoId = this[Rescates.animalitoId]
+        animalId = this[Rescates.animalId]
     )
 
 }
