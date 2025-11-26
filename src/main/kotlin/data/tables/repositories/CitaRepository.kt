@@ -13,15 +13,16 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.time.Instant
+import java.util.UUID
 
 interface CitaRepository {
     suspend fun getAllCitas(): List<Cita>
-    suspend fun getCitaById(id: Int): Cita?
-    suspend fun getCitasByAnimalito(animalitoId: Int): List<Cita>
+    suspend fun getCitaById(id: UUID): Cita?
+    suspend fun getCitasByAnimalito(animalitoId: UUID): List<Cita>
     suspend fun getCitasPendientes(): List<Cita>
     suspend fun createCita(request: CitaRequest): Cita?
-    suspend fun updateCita(id: Int, request: CitaRequest): Boolean
-    suspend fun deleteCita(id: Int): Boolean
+    suspend fun updateCita(id: UUID, request: CitaRequest): Boolean
+    suspend fun deleteCita(id: UUID): Boolean
 }
 
 class CitaRepositoryImpl : CitaRepository {
@@ -30,6 +31,7 @@ class CitaRepositoryImpl : CitaRepository {
         id = this[Citas.id],
         fechaRealizacion = this[Citas.fechaRealizacion],
         fechaCita = this[Citas.fechaCita],
+        titulo = this[Citas.titulo],
         motivo = this[Citas.motivo],
         lugar = this[Citas.lugar],
         animalitoId = this[Citas.animalitoId]
@@ -39,13 +41,13 @@ class CitaRepositoryImpl : CitaRepository {
         Citas.selectAll().map { it.toCita() }
     }
 
-    override suspend fun getCitaById(id: Int): Cita? = dbQuery {
+    override suspend fun getCitaById(id: UUID): Cita? = dbQuery {
         Citas.select { Citas.id eq id }
             .map { it.toCita() }
             .singleOrNull()
     }
 
-    override suspend fun getCitasByAnimalito(animalitoId: Int): List<Cita> = dbQuery {
+    override suspend fun getCitasByAnimalito(animalitoId: UUID): List<Cita> = dbQuery {
         Citas.select { Citas.animalitoId eq animalitoId }
             .orderBy(Citas.fechaCita to SortOrder.DESC)
             .map { it.toCita() }
@@ -61,6 +63,7 @@ class CitaRepositoryImpl : CitaRepository {
         val insertStatement = Citas.insert {
             it[fechaRealizacion] = Instant.now()
             it[fechaCita] = request.fechaCita
+            it[titulo] = request.titulo
             it[motivo] = request.motivo
             it[lugar] = request.lugar
             it[animalitoId] = request.animalitoId
@@ -69,16 +72,17 @@ class CitaRepositoryImpl : CitaRepository {
         insertStatement.resultedValues?.singleOrNull()?.toCita()
     }
 
-    override suspend fun updateCita(id: Int, request: CitaRequest): Boolean = dbQuery {
+    override suspend fun updateCita(id: UUID, request: CitaRequest): Boolean = dbQuery {
         Citas.update({ Citas.id eq id }) {
             it[fechaCita] = request.fechaCita
+            it[titulo] = request.titulo
             it[motivo] = request.motivo
             it[lugar] = request.lugar
             it[animalitoId] = request.animalitoId
         } > 0
     }
 
-    override suspend fun deleteCita(id: Int): Boolean = dbQuery {
+    override suspend fun deleteCita(id: UUID): Boolean = dbQuery {
         Citas.deleteWhere { Citas.id eq id } > 0
     }
 }

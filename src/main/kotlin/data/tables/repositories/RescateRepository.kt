@@ -12,14 +12,15 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.time.Instant
+import java.util.UUID
 
 interface RescateRepository {
     suspend fun getAllRescates(): List<Rescate>
-    suspend fun getRescateById(id: Int): Rescate?
-    suspend fun getRescatesByAnimalito(animalitoId: Int): List<Rescate>
+    suspend fun getRescateById(id: UUID): Rescate?
+    suspend fun getRescatesByAnimalito(animalitoId: UUID): List<Rescate>
     suspend fun createRescate(request: RescateRequest): Rescate?
-    suspend fun updateRescate(id: Int, request: RescateRequest): Boolean
-    suspend fun deleteRescate(id: Int): Boolean
+    suspend fun updateRescate(id: UUID, request: RescateRequest): Boolean
+    suspend fun deleteRescate(id: UUID): Boolean
 }
 
 class RescateRepositoryImpl : RescateRepository {
@@ -36,13 +37,13 @@ class RescateRepositoryImpl : RescateRepository {
         Rescates.selectAll().map { it.toRescate() }
     }
 
-    override suspend fun getRescateById(id: Int): Rescate? = dbQuery {
+    override suspend fun getRescateById(id: UUID): Rescate? = dbQuery {
         Rescates.select { Rescates.id eq id }
             .map { it.toRescate() }
             .singleOrNull()
     }
 
-    override suspend fun getRescatesByAnimalito(animalitoId: Int): List<Rescate> = dbQuery {
+    override suspend fun getRescatesByAnimalito(animalitoId: UUID): List<Rescate> = dbQuery {
         Rescates.select { Rescates.animalitoId eq animalitoId }
             .map { it.toRescate() }
     }
@@ -58,7 +59,7 @@ class RescateRepositoryImpl : RescateRepository {
         insertStatement.resultedValues?.singleOrNull()?.toRescate()
     }
 
-    override suspend fun updateRescate(id: Int, request: RescateRequest): Boolean = dbQuery {
+    override suspend fun updateRescate(id: UUID, request: RescateRequest): Boolean = dbQuery {
         Rescates.update({ Rescates.id eq id }) {
             it[lugar] = request.lugar
             it[descripcion] = request.descripcion
@@ -66,7 +67,7 @@ class RescateRepositoryImpl : RescateRepository {
         } > 0
     }
 
-    override suspend fun deleteRescate(id: Int): Boolean = dbQuery {
+    override suspend fun deleteRescate(id: UUID): Boolean = dbQuery {
         Rescates.deleteWhere { Rescates.id eq id } > 0
     }
 }

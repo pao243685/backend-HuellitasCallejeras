@@ -1,5 +1,6 @@
 package com.example.config
 
+import com.example.UUIDSerializer
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -8,6 +9,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import java.time.Instant
+import java.util.UUID
 
 fun Application.configureSerialization() {
     install(ContentNegotiation) {
@@ -17,6 +19,7 @@ fun Application.configureSerialization() {
             ignoreUnknownKeys = true
             serializersModule = SerializersModule {
                 contextual(InstantSerializer)
+                contextual(Instant::class, InstantSerializer)
             }
         })
     }

@@ -12,6 +12,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
+import kotlin.text.toIntOrNull
 
 import java.util.UUID
 
@@ -68,7 +69,7 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                 )
             }
 
-            val tratamientos = service.getTratamientosByAnimal(animalitoId)
+            val tratamientos = service.getTratamientosByAnimalito(animalitoId)
             call.respond(ApiResponse(true, "Tratamientos del animalito", tratamientos))
         }
 

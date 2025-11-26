@@ -8,7 +8,7 @@ group = "com.example"
 version = "0.0.1"
 
 application {
-    mainClass = "io.ktor.server.netty.EngineMain"
+    mainClass.set("com.example.ApplicationKt")
 }
 
 dependencies {
@@ -39,9 +39,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.22")
 }
 
-application {
-    mainClass.set("com.huellitascallejeras.ApplicationKt")
-}
 
 tasks.test {
     useJUnitPlatform()
