@@ -2,6 +2,7 @@ package com.example
 
 import com.example.config.DatabaseFactory
 import com.example.config.configureRouting
+import com.example.config.configureSecurity
 import com.example.config.configureSerialization
 import com.example.config.configureStatusPages
 import io.ktor.server.application.*
@@ -20,6 +21,7 @@ fun main() {
 fun Application.module() {
     DatabaseFactory.init()
 
+
     install(CallLogging) {
         level = Level.INFO
     }
@@ -35,5 +37,6 @@ fun Application.module() {
 
     configureSerialization()
     configureStatusPages()
+    configureSecurity()
     configureRouting()
 }

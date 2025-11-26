@@ -4,24 +4,29 @@ import com.example.data.tables.repositories.AnimalRepositoryImpl
 import com.example.data.tables.repositories.CitaRepositoryImpl
 import com.example.data.tables.repositories.MedicamentoRepositoryImpl
 import com.example.data.tables.repositories.RescateRepositoryImpl
+import com.example.data.tables.repositories.RescatistaRepositoryImpl
 import com.example.data.tables.repositories.TratamientoRepositoryImpl
 import com.example.domain.models.services.AnimalService
+import com.example.domain.models.services.AuthService
 import com.example.domain.models.services.CitaService
 import com.example.domain.models.services.MedicamentoService
 import com.example.domain.models.services.RescateService
 import com.example.domain.models.services.TratamientoService
 import com.example.presentation.routes.animalRoutes
+import com.example.presentation.routes.authRoutes
 import com.example.presentation.routes.citaRoutes
 import com.example.presentation.routes.medicamentoRoutes
 import com.example.presentation.routes.rescateRoutes
 import com.example.presentation.routes.tratamientoRoutes
 import io.ktor.server.application.Application
+import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 
 fun Application.configureRouting() {
+    val rescatistaRepository = RescatistaRepositoryImpl()
     val animalRepository = AnimalRepositoryImpl()
     val rescateRepository = RescateRepositoryImpl()
     val tratamientoRepository = TratamientoRepositoryImpl()
@@ -29,6 +34,7 @@ fun Application.configureRouting() {
     val citaRepository = CitaRepositoryImpl()
 
     // Inicializar servicios
+    val authService = AuthService(rescatistaRepository)
     val animalService = AnimalService(animalRepository)
     val rescateService = RescateService(rescateRepository)
     val tratamientoService = TratamientoService(tratamientoRepository)
@@ -37,16 +43,26 @@ fun Application.configureRouting() {
 
     routing {
         route("/api") {
-            // Rutas de la API
-            animalRoutes(animalService)
-            rescateRoutes(rescateService)
-            tratamientoRoutes(tratamientoService)
-            medicamentoRoutes(medicamentoService)
-            citaRoutes(citaService)
+            // Rutas públicas
+            authRoutes(authService)
 
-            // Ruta de prueba
             get("/health") {
-                call.respond(mapOf("status" to "OK", "message" to "API funcionando correctamente"))
+                call.respond(
+                    mapOf(
+                        "status" to "OK",
+                        "message" to "API Huellitas Callejeras funcionando",
+                        "version" to "2.0.0"
+                    )
+                )
+            }
+
+
+            authenticate("auth-jwt") {
+                animalRoutes(animalService)
+                rescateRoutes(rescateService)
+                tratamientoRoutes(tratamientoService)
+                medicamentoRoutes(medicamentoService)
+                citaRoutes(citaService)
             }
         }
     }

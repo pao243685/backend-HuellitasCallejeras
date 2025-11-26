@@ -37,6 +37,10 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:0.45.0")
     testImplementation("io.ktor:ktor-server-test-host:2.3.7")
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.22")
+    implementation("com.auth0:java-jwt:4.4.0")
+    implementation("org.mindrot:jbcrypt:0.4")
+    implementation("io.ktor:ktor-server-auth-jvm:2.3.12")
+    implementation("io.ktor:ktor-server-auth-jwt-jvm:2.3.12")
 }
 
 
