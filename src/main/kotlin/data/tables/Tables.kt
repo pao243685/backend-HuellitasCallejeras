@@ -4,8 +4,8 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.timestamp
 import java.util.UUID
 
-object Animalitos : Table("animalito") {
-    val id = uuid("id_animalito").clientDefault { UUID.randomUUID() }
+object Animalitos : Table("animal") {
+    val id = uuid("id_animal").clientDefault { UUID.randomUUID() }
     val nombre = varchar("nombre", 250)
     val peso = float("peso")
     val raza = varchar("raza", 250).nullable()
@@ -14,7 +14,8 @@ object Animalitos : Table("animalito") {
     val especie = varchar("especie", 250)
     val estado = varchar("estado", 250)
     val fechaSalida = timestamp("fecha_salida").nullable()
-    val urlImage = varchar("urlimagen", 250)
+    val urlImage = varchar("url_imagen", 250)
+    val rescatista_id = uuid("rescatista_id")
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -68,7 +69,7 @@ object Citas : Table("citas") {
     val titulo = varchar("titulo", 250)
     val motivo = varchar("motivo", 250)
     val lugar = varchar("lugar", 250)
-    val animalitoId = uuid("animalito_id").references(Animalitos.id)
+    val animalitoId = uuid("animal_id").references(Animalitos.id)
 
     override val primaryKey = PrimaryKey(id)
 }

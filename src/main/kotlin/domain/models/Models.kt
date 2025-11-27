@@ -18,7 +18,9 @@ data class Animalito(
     val especie: String,
     val estado: String,
     @Contextual val fechaSalida: Instant? = null,
-    val urlImage: String
+    val urlImage: String,
+    @Serializable(with = UUIDSerializer::class)
+    val rescatista_id: UUID
 )
 
 @Serializable
@@ -30,7 +32,9 @@ data class AnimalitoRequest(
     val edad: Int,
     val especie: String,
     val estado: String,
-    val urlImage: String
+    val urlImage: String,
+    @Serializable(with = UUIDSerializer::class)
+    val rescatista_id: UUID
 )
 
 @Serializable

@@ -52,6 +52,7 @@ class AnimalRepositoryImpl : AnimalRepository {
         estado = this[Animalitos.estado],
         fechaSalida = this[Animalitos.fechaSalida],
         urlImage = this[Animalitos.urlImage],
+        rescatista_id = this[Animalitos.rescatista_id]
     )
 
     override suspend fun getAllAnimalitos(): List<Animalito> = dbQuery {
@@ -74,6 +75,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = request.especie
             it[estado] = request.estado
             it[urlImage] = request.urlImage
+            it[rescatista_id] = request.rescatista_id
         }
 
         insertStatement.resultedValues?.singleOrNull()?.toAnimalito()
@@ -89,6 +91,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = request.especie
             it[estado] = request.estado
             it[urlImage] = request.urlImage
+            it[rescatista_id] = request.rescatista_id
             if (request.estado == "Adoptado") {
                 it[fechaSalida] = Instant.now()
             }
@@ -109,7 +112,7 @@ class AnimalRepositoryImpl : AnimalRepository {
         rescateRequest: RescateRequestSinAnimalitoId
     ): AnimalitoRescateResponse? = dbQuery {
         val transactionResult = try {
-            // 1. Crear el animalito
+
             val animalitoInsert = Animalitos.insert {
                 it[nombre] = animalRequest.nombre
                 it[peso] = animalRequest.peso
@@ -119,6 +122,7 @@ class AnimalRepositoryImpl : AnimalRepository {
                 it[especie] = animalRequest.especie
                 it[estado] = animalRequest.estado
                 it[urlImage] = animalRequest.urlImage
+                it[rescatista_id] = animalRequest.rescatista_id
             }
 
             val NanimalitoId = animalitoInsert[Animalitos.id]
@@ -166,6 +170,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = animalRequest.especie
             it[estado] = animalRequest.estado
             it[urlImage] = animalRequest.urlImage
+            it[rescatista_id] = animalRequest.rescatista_id
             if (animalRequest.estado == "Adoptado") {
                 it[fechaSalida] = Instant.now()
             }
