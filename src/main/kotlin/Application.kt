@@ -8,6 +8,11 @@ import com.example.config.configureStatusPages
 import io.ktor.server.application.*
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.http.HttpMethod.Companion.Delete
+import io.ktor.http.HttpMethod.Companion.Get
+import io.ktor.http.HttpMethod.Companion.Options
+import io.ktor.http.HttpMethod.Companion.Patch
+import io.ktor.http.HttpMethod.Companion.Put
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.cors.routing.CORS
 import org.slf4j.event.Level
@@ -29,10 +34,11 @@ fun Application.module() {
     install(CORS) {
         anyHost()
         allowHeader("Content-Type")
-        allowMethod(io.ktor.http.HttpMethod.Options)
-        allowMethod(io.ktor.http.HttpMethod.Put)
-        allowMethod(io.ktor.http.HttpMethod.Delete)
-        allowMethod(io.ktor.http.HttpMethod.Patch)
+        allowHeader("Authorization")
+        allowMethod(Options)
+        allowMethod(Put)
+        allowMethod(Delete)
+        allowMethod(Patch)
     }
 
     configureSerialization()

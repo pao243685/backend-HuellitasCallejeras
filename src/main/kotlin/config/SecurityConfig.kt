@@ -36,10 +36,3 @@ fun Application.configureSecurity() {
         }
     }
 }
-
-fun JWTPrincipal.getTokenClaims(): TokenClaims {
-    return TokenClaims(
-        rescatistaId = UUID.fromString(payload.getClaim("rescatistaId").asString()),
-        nombre = payload.getClaim("nombre").asString()
-    )
-}

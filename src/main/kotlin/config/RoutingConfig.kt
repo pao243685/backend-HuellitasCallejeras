@@ -56,7 +56,6 @@ fun Application.configureRouting() {
                 )
             }
 
-
             authenticate("auth-jwt") {
                 animalRoutes(animalService)
                 rescateRoutes(rescateService)

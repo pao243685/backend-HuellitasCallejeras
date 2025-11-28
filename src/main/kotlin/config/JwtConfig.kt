@@ -10,7 +10,7 @@ import java.util.UUID
 object JwtConfig {
     private val secret = System.getenv("JWT_SECRET") ?: "huellitas-secret-key"
     private val issuer = "huellitas-callejeras-api"
-    private val validityInMs = 36_000_00 * 24 * 30
+    private val validityInMs = 1000L * 60 * 60 * 24 * 30
     private val algorithm = Algorithm.HMAC256(secret)
 
     fun generateToken(rescatistaId: UUID, nombre: String): String {
