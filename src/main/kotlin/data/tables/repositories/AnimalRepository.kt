@@ -24,6 +24,7 @@ interface AnimalRepository {
     suspend fun createAnimal(request: AnimalRequest): Animal?
     suspend fun updateAnimal(id: UUID, request: AnimalRequest): Boolean
     suspend fun deleteAnimal(id: UUID): Boolean
+    suspend fun updateImagenUrl(id: UUID, imagenUrl: String): Boolean
     suspend fun getAnimalByEstado(estado: String): List<Animal>
     suspend fun createAnimalConRescate(
         animalRequest: AnimalRequest,
@@ -52,6 +53,7 @@ class AnimalRepositoryImpl : AnimalRepository {
         estado = this[animal.estado],
         fechaSalida = this[animal.fechaSalida],
         urlImage = this[animal.urlImage],
+        rescatistaId = this[animal.rescatistaId],
     )
 
     override suspend fun getAllAnimal(): List<Animal> = dbQuery {
@@ -74,6 +76,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = request.especie
             it[estado] = request.estado
             it[urlImage] = request.urlImage
+            it[rescatistaId] = request.rescatistaId
         }
 
         insertStatement.resultedValues?.singleOrNull()?.toAnimal()
@@ -89,6 +92,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = request.especie
             it[estado] = request.estado
             it[urlImage] = request.urlImage
+            it[rescatistaId] = request.rescatistaId
             if (request.estado == "Adoptado") {
                 it[fechaSalida] = Instant.now()
             }
@@ -109,7 +113,6 @@ class AnimalRepositoryImpl : AnimalRepository {
         rescateRequest: RescateRequestSinAnimalId
     ): AnimalRescateResponse? = dbQuery {
         val transactionResult = try {
-            // 1. Crear el animal
             val animalInsert = animal.insert {
                 it[nombre] = animalRequest.nombre
                 it[peso] = animalRequest.peso
@@ -119,6 +122,7 @@ class AnimalRepositoryImpl : AnimalRepository {
                 it[especie] = animalRequest.especie
                 it[estado] = animalRequest.estado
                 it[urlImage] = animalRequest.urlImage
+                it[rescatistaId] = animalRequest.rescatistaId
             }
 
             val animalId = animalInsert[animal.id]
@@ -166,6 +170,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = animalRequest.especie
             it[estado] = animalRequest.estado
             it[urlImage] = animalRequest.urlImage
+            it[rescatistaId] = animalRequest.rescatistaId
             if (animalRequest.estado == "Adoptado") {
                 it[fechaSalida] = Instant.now()
             }
@@ -222,6 +227,12 @@ class AnimalRepositoryImpl : AnimalRepository {
         }
     }
 
+
+    override suspend fun updateImagenUrl(id: UUID, imagenUrl: String): Boolean = dbQuery {
+        animal.update({ animal.id eq id }) {
+            it[animal.urlImage] = imagenUrl
+        } > 0
+    }
     private fun ResultRow.toRescate() = Rescate(
         id = this[Rescates.id],
         fechaIngreso = this[Rescates.fechaIngreso],

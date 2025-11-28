@@ -26,6 +26,7 @@ interface TratamientoRepository {
     suspend fun updateTratamiento(id: UUID, receta: String): Boolean
     suspend fun deleteTratamiento(id: UUID): Boolean
     suspend fun getMedicamentosByTratamiento(tratamientoId: UUID): List<MedicamentoTratamiento>
+    suspend fun updateRecetaArchivoUrl(id: UUID, recetaArchivoUrl: String): Boolean
 }
 
 class TratamientoRepositoryImpl : TratamientoRepository {
@@ -107,5 +108,10 @@ class TratamientoRepositoryImpl : TratamientoRepository {
                     fechaConclusion = it[TratamientoMedicamento.fechaConclusion]
                 )
             }
+    }
+    override suspend fun updateRecetaArchivoUrl(id: UUID, recetaArchivoUrl: String): Boolean = dbQuery {
+        Tratamientos.update({ Tratamientos.id eq id }) {
+            it[Tratamientos.receta] = recetaArchivoUrl
+        } > 0
     }
 }

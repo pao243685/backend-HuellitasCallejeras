@@ -15,6 +15,7 @@ import com.example.domain.models.services.TratamientoService
 import com.example.presentation.routes.animalRoutes
 import com.example.presentation.routes.authRoutes
 import com.example.presentation.routes.citaRoutes
+import com.example.presentation.routes.fileRoutes
 import com.example.presentation.routes.medicamentoRoutes
 import com.example.presentation.routes.rescateRoutes
 import com.example.presentation.routes.tratamientoRoutes
@@ -62,6 +63,7 @@ fun Application.configureRouting() {
                 tratamientoRoutes(tratamientoService)
                 medicamentoRoutes(medicamentoService)
                 citaRoutes(citaService)
+                fileRoutes(animalRepository, tratamientoRepository)
             }
         }
     }
