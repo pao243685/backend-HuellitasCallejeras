@@ -15,6 +15,7 @@ object animal : Table("animal") {
     val estado = varchar("estado", 250)
     val fechaSalida = timestamp("fecha_salida").nullable()
     val urlImage = varchar("url_imagen", 250)
+    val rescatistaId = uuid("rescatista_id").references(Rescatistas.id)
 
     override val primaryKey = PrimaryKey(id)
 }

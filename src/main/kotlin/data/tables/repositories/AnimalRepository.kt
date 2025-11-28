@@ -52,6 +52,7 @@ class AnimalRepositoryImpl : AnimalRepository {
         estado = this[animal.estado],
         fechaSalida = this[animal.fechaSalida],
         urlImage = this[animal.urlImage],
+        rescatistaId = this[animal.rescatistaId],
     )
 
     override suspend fun getAllAnimal(): List<Animal> = dbQuery {
@@ -74,6 +75,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = request.especie
             it[estado] = request.estado
             it[urlImage] = request.urlImage
+            it[rescatistaId] = request.rescatistaId
         }
 
         insertStatement.resultedValues?.singleOrNull()?.toAnimal()
@@ -89,6 +91,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = request.especie
             it[estado] = request.estado
             it[urlImage] = request.urlImage
+            it[rescatistaId] = request.rescatistaId
             if (request.estado == "Adoptado") {
                 it[fechaSalida] = Instant.now()
             }
@@ -119,6 +122,7 @@ class AnimalRepositoryImpl : AnimalRepository {
                 it[especie] = animalRequest.especie
                 it[estado] = animalRequest.estado
                 it[urlImage] = animalRequest.urlImage
+                it[rescatistaId] = animalRequest.rescatistaId
             }
 
             val animalId = animalInsert[animal.id]
@@ -166,6 +170,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[especie] = animalRequest.especie
             it[estado] = animalRequest.estado
             it[urlImage] = animalRequest.urlImage
+            it[rescatistaId] = animalRequest.rescatistaId
             if (animalRequest.estado == "Adoptado") {
                 it[fechaSalida] = Instant.now()
             }

@@ -13,7 +13,7 @@ class AuthService(private val rescatistaRepository: RescatistaRepository) {
         val (rescatista, hashedPassword) = rescatistaRepository.getRescatistaByNombre(request.nombre)
             ?: return null
 
-        if (!BCrypt.checkpw(request.contraseña, hashedPassword)) {
+        if (!BCrypt.checkpw(request.contrasena, hashedPassword)) {
             return null
         }
 

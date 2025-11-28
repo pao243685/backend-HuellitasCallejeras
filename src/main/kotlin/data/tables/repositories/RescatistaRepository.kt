@@ -30,18 +30,16 @@ class RescatistaRepositoryImpl : RescatistaRepository {
 
     override suspend fun getRescatistaByNombre(nombre: String): Pair<Rescatista, String>? = dbQuery {
         Rescatistas.select { Rescatistas.nombre eq nombre }
-            .map { it.toRescatista() to it[Rescatistas.contraseña] }
+            .map { it.toRescatista() to it[Rescatistas.contrasena] }
             .singleOrNull()
     }
 
     override suspend fun createRescatista(nombre: String, contraseña: String): Rescatista? = dbQuery {
-        val hashedPassword = BCrypt.hashpw(contraseña, BCrypt.gensalt())
         val id = UUID.randomUUID()
-
         Rescatistas.insert {
             it[Rescatistas.id] = id
             it[Rescatistas.nombre] = nombre
-            it[Rescatistas.contraseña] = hashedPassword
+            it[Rescatistas.contrasena] = contraseña
         }
 
         Rescatista(id, nombre)

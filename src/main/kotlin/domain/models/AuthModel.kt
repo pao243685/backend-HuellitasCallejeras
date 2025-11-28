@@ -14,7 +14,7 @@ data class Rescatista(
 @Serializable
 data class RescatistaLogin(
     val nombre: String,
-    val contraseña: String
+    val contrasena: String
 )
 
 @Serializable

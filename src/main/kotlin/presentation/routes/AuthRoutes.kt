@@ -15,7 +15,6 @@ fun Route.authRoutes(authService: AuthService) {
             try {
                 val request = call.receive<RescatistaLogin>()
                 val authResponse = authService.login(request)
-
                 if (authResponse != null) {
                     call.respond(
                         HttpStatusCode.OK,
@@ -48,7 +47,8 @@ fun Route.authRoutes(authService: AuthService) {
         post("/crear-rescatista") {
             try {
                 val request = call.receive<RescatistaLogin>()
-                val rescatista = authService.createRescatista(request.nombre, request.contraseña)
+                println("rescatista ${request.nombre} contrasena ${request.contrasena}")
+                val rescatista = authService.createRescatista(request.nombre, request.contrasena)
 
                 if (rescatista != null) {
                     call.respond(
