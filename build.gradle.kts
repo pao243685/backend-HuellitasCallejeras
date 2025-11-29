@@ -46,6 +46,8 @@ dependencies {
     implementation("aws.smithy.kotlin:http-client-engine-crt:1.0.15")
     implementation("io.ktor:ktor-server-partial-content:2.3.7")
     implementation("io.ktor:ktor-server-auto-head-response:2.3.7")
+
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 }
 
 
