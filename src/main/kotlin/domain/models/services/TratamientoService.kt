@@ -17,10 +17,12 @@ class TratamientoService(private val repository: TratamientoRepository) {
     suspend fun createTratamiento(request: TratamientoRequest): Tratamiento? {
         require(request.receta.isNotBlank()) { "La receta no puede estar vacía" }
         require(request.medicamentos.isNotEmpty()) { "Debe incluir al menos un medicamento" }
+
         request.medicamentos.forEach { med ->
             require(med.dosis > 0) { "La dosis debe ser mayor a 0" }
             require(med.repeticion >= 0) { "La repetición debe ser mayor o igual a 0" }
         }
+
         return repository.createTratamiento(request)
     }
 

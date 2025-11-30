@@ -111,7 +111,11 @@ object S3Service {
             "image/png" -> "png"
             "image/gif" -> "gif"
             "image/webp" -> "webp"
-            else -> "jpg"
+
+            "application/pdf" -> "pdf"
+            "application/msword" -> "doc"
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> "docx"
+            else -> "bin"
         }
     }
 
@@ -144,4 +148,42 @@ object S3Service {
             throw IllegalArgumentException("URL de S3 inválida: $url")
         }
     }
+
+
+    suspend fun uploadFile(
+        fileBytes: ByteArray,
+        contentType: String,
+        folder: String = "files"
+    ): com.example.domain.models.FileUploadResponse {
+        return try {
+            val fileExtension = getExtension(contentType)
+            val fileName = "$folder/${UUID.randomUUID()}.$fileExtension"
+
+            val request = PutObjectRequest {
+                bucket = bucketName
+                key = fileName
+                body = ByteStream.fromBytes(fileBytes)
+                this.contentType = contentType
+            }
+
+            val response = s3Client.putObject(request)
+
+            val fileUrl = "https://$bucketName.s3.$region.amazonaws.com/$fileName"
+
+            com.example.domain.models.FileUploadResponse(
+                success = true,
+                message = "Archivo subido exitosamente",
+                url = fileUrl
+            )
+
+        } catch (e: Exception) {
+            println("Error subiendo archivo: ${e.message}")
+            com.example.domain.models.FileUploadResponse(
+                success = false,
+                message = "Error subiendo archivo: ${e.message}",
+                url = ""
+            )
+        }
+    }
+
 }

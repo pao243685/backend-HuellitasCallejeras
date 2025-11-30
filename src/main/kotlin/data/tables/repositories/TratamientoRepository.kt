@@ -17,7 +17,6 @@ import org.jetbrains.exposed.sql.update
 import java.time.Instant
 import java.util.UUID
 
-
 interface TratamientoRepository {
     suspend fun getAllTratamientos(): List<Tratamiento>
     suspend fun getTratamientoById(id: UUID): Tratamiento?
@@ -31,11 +30,13 @@ interface TratamientoRepository {
 
 class TratamientoRepositoryImpl : TratamientoRepository {
 
-    private fun ResultRow.toTratamiento() = Tratamiento(
-        id = this[Tratamientos.id],
-        fechaInicio = this[Tratamientos.fechaInicio],
-        receta = this[Tratamientos.receta]
-    )
+    private fun ResultRow.toTratamiento(): Tratamiento {
+        return Tratamiento(
+            id = this[Tratamientos.id],
+            fechaInicio = this[Tratamientos.fechaInicio],
+            receta = this[Tratamientos.receta]
+        )
+    }
 
     override suspend fun getAllTratamientos(): List<Tratamiento> = dbQuery {
         Tratamientos.selectAll().map { it.toTratamiento() }
@@ -60,29 +61,37 @@ class TratamientoRepositoryImpl : TratamientoRepository {
     }
 
     override suspend fun createTratamiento(request: TratamientoRequest): Tratamiento? = dbQuery {
-        val tratamientoId = Tratamientos.insert {
-            it[fechaInicio] = Instant.now()
-            it[receta] = request.receta
-        }[Tratamientos.id]
+        try {
 
-        // Asociar con animal
-        TratamientoAnimal.insert {
-            it[animalId] = request.animalId
-            it[TratamientoAnimal.tratamientoId] = tratamientoId
-        }
+            val tratamientoId = Tratamientos.insert {
+                it[fechaInicio] = request.fechaInicio
+                it[receta] = request.receta
+            }[Tratamientos.id]
 
-        // Asociar medicamentos
-        request.medicamentos.forEach { med ->
-            TratamientoMedicamento.insert {
-                it[TratamientoMedicamento.tratamientoId] = tratamientoId
-                it[medicamentoId] = med.medicamentoId
-                it[dosis] = med.dosis
-                it[repeticion] = med.repeticion
-                it[fechaConclusion] = med.fechaConclusion
+            TratamientoAnimal.insert {
+                it[animalId] = request.animalId
+                it[TratamientoAnimal.tratamientoId] = tratamientoId
             }
-        }
 
-        getTratamientoById(tratamientoId)
+            request.medicamentos.forEach { med ->
+                TratamientoMedicamento.insert {
+                    it[TratamientoMedicamento.tratamientoId] = tratamientoId
+                    it[medicamentoId] = med.medicamentoId
+                    it[dosis] = med.dosis
+                    it[repeticion] = med.repeticion
+                    it[fechaConclusion] = med.fechaConclusion
+                }
+            }
+
+            return@dbQuery Tratamiento(
+                id = tratamientoId,
+                fechaInicio = request.fechaInicio,
+                receta = request.receta
+            )
+
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun updateTratamiento(id: UUID, receta: String): Boolean = dbQuery {
@@ -109,6 +118,7 @@ class TratamientoRepositoryImpl : TratamientoRepository {
                 )
             }
     }
+
     override suspend fun updateRecetaArchivoUrl(id: UUID, recetaArchivoUrl: String): Boolean = dbQuery {
         Tratamientos.update({ Tratamientos.id eq id }) {
             it[Tratamientos.receta] = recetaArchivoUrl
