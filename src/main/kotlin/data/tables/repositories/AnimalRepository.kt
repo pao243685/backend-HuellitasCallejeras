@@ -75,6 +75,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[edad] = request.edad
             it[especie] = request.especie
             it[estado] = request.estado
+            it[fechaSalida] = request.fechaSalida
             it[urlImage] = request.urlImage
             it[rescatistaId] = request.rescatistaId
         }
@@ -91,6 +92,7 @@ class AnimalRepositoryImpl : AnimalRepository {
             it[edad] = request.edad
             it[especie] = request.especie
             it[estado] = request.estado
+            it[fechaSalida] = request.fechaSalida
             it[urlImage] = request.urlImage
             it[rescatistaId] = request.rescatistaId
             if (request.estado == "Adoptado") {
@@ -242,4 +244,3 @@ class AnimalRepositoryImpl : AnimalRepository {
     )
 
 }
-

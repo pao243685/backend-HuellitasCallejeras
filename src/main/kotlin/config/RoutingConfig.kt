@@ -16,6 +16,7 @@ import com.example.presentation.routes.animalRoutes
 import com.example.presentation.routes.authRoutes
 import com.example.presentation.routes.citaRoutes
 import com.example.presentation.routes.fileRoutes
+//import com.example.presentation.routes.fileRoutes
 import com.example.presentation.routes.medicamentoRoutes
 import com.example.presentation.routes.rescateRoutes
 import com.example.presentation.routes.tratamientoRoutes
@@ -34,7 +35,6 @@ fun Application.configureRouting() {
     val medicamentoRepository = MedicamentoRepositoryImpl()
     val citaRepository = CitaRepositoryImpl()
 
-    // Inicializar servicios
     val authService = AuthService(rescatistaRepository)
     val animalService = AnimalService(animalRepository)
     val rescateService = RescateService(rescateRepository)
@@ -56,14 +56,15 @@ fun Application.configureRouting() {
                     )
                 )
             }
-
+            animalRoutes(animalService)
+            tratamientoRoutes(tratamientoService)
+            medicamentoRoutes(medicamentoService)
+            rescateRoutes(rescateService)
+            citaRoutes(citaService)
+            fileRoutes(animalRepository, tratamientoRepository)
             authenticate("auth-jwt") {
-                animalRoutes(animalService)
-                rescateRoutes(rescateService)
-                tratamientoRoutes(tratamientoService)
-                medicamentoRoutes(medicamentoService)
-                citaRoutes(citaService)
-                fileRoutes(animalRepository, tratamientoRepository)
+
+
             }
         }
     }

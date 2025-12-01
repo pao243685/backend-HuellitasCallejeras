@@ -1,6 +1,7 @@
 package com.example.presentation.routes
 
 import com.example.domain.models.ApiResponse
+import com.example.domain.models.MedicamentoTratamientoRequest
 import com.example.domain.models.TratamientoRequest
 import com.example.domain.models.services.TratamientoService
 import io.ktor.http.HttpStatusCode
@@ -84,26 +85,37 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
 
         put("/{id}") {
             val rawId = call.parameters["id"]
-            val id = try {
-                UUID.fromString(rawId)
-            } catch (e: Exception) {
-                return@put call.respond(
-                    HttpStatusCode.BadRequest,
-                    ApiResponse<Any>(false, "ID inválido")
-                )
+            val id = try { UUID.fromString(rawId) } catch (e: Exception) {
+                return@put call.respond(HttpStatusCode.BadRequest, ApiResponse<Any>(false, "ID inválido"))
             }
 
-            val receta = call.receive<Map<String, String>>()["receta"] ?: return@put call.respond(
-                HttpStatusCode.BadRequest, ApiResponse<Any>(false, "Receta requerida")
-            )
+            val body = call.receive<Map<String, String>>()
+            val receta = body["receta"]
 
             val updated = service.updateTratamiento(id, receta)
 
             call.respond(
                 if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound,
-                ApiResponse(updated, if (updated) "Actualizado" else "No encontrado", null)
+                ApiResponse(updated, if (updated) "Actualizado" else "No encontrado",null)
             )
         }
+
+        put("/{id}/medicamentos") {
+            val rawId = call.parameters["id"]
+            val id = try { UUID.fromString(rawId) } catch (e: Exception) {
+                return@put call.respond(HttpStatusCode.BadRequest, ApiResponse<Any>(false, "ID inválido"))
+            }
+
+            val body = call.receive<MedicamentoTratamientoRequest>()
+
+            val updated = service.updateMedicamentos(id, body.medicamentos)
+
+            call.respond(
+                if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound,
+                ApiResponse(updated, if (updated) "Medicamentos actualizados" else "Tratamiento no encontrado",null)
+            )
+        }
+
 
         delete("/{id}") {
             val rawId = call.parameters["id"]

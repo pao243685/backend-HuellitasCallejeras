@@ -10,7 +10,12 @@ import java.util.UUID
 data class MedicamentoTratamiento(
     @Serializable(with = UUIDSerializer::class)
     val medicamentoId: UUID,
+    val nombre: String? = null,
     val dosis: Float,
     val repeticion: Float,
     @Contextual val fechaConclusion: Instant? = null
+)
+@Serializable
+data class MedicamentoTratamientoRequest(
+    val medicamentos: List<MedicamentoTratamiento>
 )

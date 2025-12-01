@@ -12,13 +12,13 @@ import java.util.UUID
 
 object S3Service {
 
-//    private val bucketName = System.getenv("AWS_S3_BUCKET") ?: ""
-//    private val region = System.getenv("AWS_REGION") ?: "us-east-1"
-//    const val DEFAULT_ANIMAL_IMAGE = "https://amzn-s3-prueba-archivos-bucket.s3.us-east-1.amazonaws.com/imagen-default.jpg"
-//
-//    private val accessKey = System.getenv("AWS_ACCESS_KEY_ID") ?: ""
-//    private val secretKey = System.getenv("AWS_SECRET_ACCESS_KEY") ?: ""
-//    private val sessionToken = System.getenv("AWS_SESSION_TOKEN") ?: ""
+    private val bucketName = System.getenv("AWS_S3_BUCKET") ?: ""
+    private val region = System.getenv("AWS_REGION") ?: "us-east-1"
+    const val DEFAULT_ANIMAL_IMAGE = "https://amzn-s3-prueba-archivos-bucket.s3.us-east-1.amazonaws.com/imagen-default.jpg"
+
+    private val accessKey = System.getenv("AWS_ACCESS_KEY_ID") ?: ""
+    private val secretKey = System.getenv("AWS_SECRET_ACCESS_KEY") ?: ""
+    private val sessionToken = System.getenv("AWS_SESSION_TOKEN") ?: ""
 
 
     private val credentialsProvider = StaticCredentialsProvider(

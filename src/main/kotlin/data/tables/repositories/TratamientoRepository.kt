@@ -1,6 +1,7 @@
 package com.example.data.tables.repositories
 
 import com.example.config.DatabaseFactory.dbQuery
+import com.example.data.tables.Medicamentos
 import com.example.domain.models.MedicamentoTratamiento
 import com.example.domain.models.Tratamiento
 import com.example.domain.models.TratamientoRequest
@@ -23,10 +24,12 @@ interface TratamientoRepository {
     suspend fun getTratamientoById(id: UUID): Tratamiento?
     suspend fun getTratamientosByAnimal(animalId: UUID): List<Tratamiento>
     suspend fun createTratamiento(request: TratamientoRequest): Tratamiento?
-    suspend fun updateTratamiento(id: UUID, receta: String): Boolean
+    suspend fun updateTratamiento(id: UUID, receta: String?): Boolean
     suspend fun deleteTratamiento(id: UUID): Boolean
     suspend fun getMedicamentosByTratamiento(tratamientoId: UUID): List<MedicamentoTratamiento>
     suspend fun updateRecetaArchivoUrl(id: UUID, recetaArchivoUrl: String): Boolean
+    suspend fun replaceMedicamentos(tratamientoId: UUID, medicamentos: List<MedicamentoTratamiento>): Boolean
+
 }
 
 class TratamientoRepositoryImpl : TratamientoRepository {
@@ -85,9 +88,16 @@ class TratamientoRepositoryImpl : TratamientoRepository {
         getTratamientoById(tratamientoId)
     }
 
-    override suspend fun updateTratamiento(id: UUID, receta: String): Boolean = dbQuery {
+    override suspend fun updateTratamiento(id: UUID, receta: String?): Boolean = dbQuery {
+        val actual = Tratamientos
+            .select { Tratamientos.id eq id }
+            .singleOrNull()
+            ?: return@dbQuery false
+
+        val recetaFinal = receta ?: actual[Tratamientos.receta]
+
         Tratamientos.update({ Tratamientos.id eq id }) {
-            it[Tratamientos.receta] = receta
+            it[Tratamientos.receta] = recetaFinal
         } > 0
     }
 
@@ -98,11 +108,12 @@ class TratamientoRepositoryImpl : TratamientoRepository {
     }
 
     override suspend fun getMedicamentosByTratamiento(tratamientoId: UUID): List<MedicamentoTratamiento> = dbQuery {
-        TratamientoMedicamento
+        (TratamientoMedicamento innerJoin Medicamentos)
             .select { TratamientoMedicamento.tratamientoId eq tratamientoId }
             .map {
                 MedicamentoTratamiento(
                     medicamentoId = it[TratamientoMedicamento.medicamentoId],
+                    nombre = it[Medicamentos.nombre],
                     dosis = it[TratamientoMedicamento.dosis],
                     repeticion = it[TratamientoMedicamento.repeticion],
                     fechaConclusion = it[TratamientoMedicamento.fechaConclusion]
@@ -113,5 +124,24 @@ class TratamientoRepositoryImpl : TratamientoRepository {
         Tratamientos.update({ Tratamientos.id eq id }) {
             it[Tratamientos.receta] = recetaArchivoUrl
         } > 0
+    }
+    override suspend fun replaceMedicamentos(
+        tratamientoId: UUID,
+        medicamentos: List<MedicamentoTratamiento>
+    ): Boolean = dbQuery {
+
+        TratamientoMedicamento.deleteWhere { TratamientoMedicamento.tratamientoId eq tratamientoId }
+
+        medicamentos.forEach { med ->
+            TratamientoMedicamento.insert {
+                it[TratamientoMedicamento.tratamientoId] = tratamientoId
+                it[medicamentoId] = med.medicamentoId
+                it[dosis] = med.dosis
+                it[repeticion] = med.repeticion
+                it[fechaConclusion] = med.fechaConclusion
+            }
+        }
+
+        true
     }
 }
