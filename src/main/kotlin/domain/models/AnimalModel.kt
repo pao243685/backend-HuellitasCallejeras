@@ -1,5 +1,6 @@
 package com.example.domain.models
 
+import com.example.InstantSerializer
 import com.example.UUIDSerializer
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -17,7 +18,8 @@ data class Animal(
     val edad: Int,
     val especie: String,
     val estado: String,
-    @Contextual val fechaSalida: Instant? = null,
+    @Serializable(with = InstantSerializer::class)
+    val fechaSalida: Instant? = null,
     val urlImage: String,
     @Serializable(with = UUIDSerializer::class)
     val rescatistaId: UUID
@@ -33,7 +35,8 @@ data class AnimalRequest(
     val edad: Int,
     val especie: String,
     val estado: String,
-    @Contextual val fechaSalida: Instant? = null,
+    @Serializable(with = InstantSerializer::class)
+    val fechaSalida: Instant? = null,
     val urlImage: String,
     @Serializable(with = UUIDSerializer::class)
     val rescatistaId: UUID
@@ -48,7 +51,8 @@ data class AnimalRequestsinImagen(
     val edad: Int,
     val especie: String,
     val estado: String,
-    @Contextual val fechaSalida: Instant? = null,
+    @Serializable(with = InstantSerializer::class)
+    val fechaSalida: Instant? = null,
     @Serializable(with = UUIDSerializer::class)
     val rescatistaId: UUID
 )

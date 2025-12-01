@@ -15,20 +15,41 @@ class TratamientoService(private val repository: TratamientoRepository) {
         repository.getTratamientosByAnimal(animalId)
 
     suspend fun createTratamiento(request: TratamientoRequest): Tratamiento? {
+        println("🔵 [DEBUG-SERVICE] Validando TratamientoRequest...")
+        println("🔵 [DEBUG-SERVICE] request: $request")
+
         require(request.receta.isNotBlank()) { "La receta no puede estar vacía" }
         require(request.medicamentos.isNotEmpty()) { "Debe incluir al menos un medicamento" }
 
+        println("🔵 [DEBUG-SERVICE] Validando ${request.medicamentos.size} medicamentos...")
+
         request.medicamentos.forEach { med ->
+            println("🔵 [DEBUG-SERVICE] Validando medicamento: $med")
             require(med.dosis > 0) { "La dosis debe ser mayor a 0" }
             require(med.repeticion >= 0) { "La repetición debe ser mayor o igual a 0" }
         }
 
+        println("🔵 [DEBUG-SERVICE] Llamando a repository.createTratamiento...")
         return repository.createTratamiento(request)
     }
 
-    suspend fun updateTratamiento(id: UUID, receta: String): Boolean {
-        require(receta.isNotBlank()) { "La receta no puede estar vacía" }
-        return repository.updateTratamiento(id, receta)
+    suspend fun updateTratamiento(id: UUID, request: TratamientoRequest): Boolean {
+        println("🔵 [DEBUG-SERVICE] Actualizando tratamiento ID: $id")
+        println("🔵 [DEBUG-SERVICE] Request recibido: $request")
+
+        require(request.receta.isNotBlank()) { "La receta no puede estar vacía" }
+        require(request.medicamentos.isNotEmpty()) { "Debe incluir al menos un medicamento" }
+
+        println("🔵 [DEBUG-SERVICE] Validando ${request.medicamentos.size} medicamentos...")
+
+        request.medicamentos.forEach { med ->
+            println("🔵 [DEBUG-SERVICE] Validando medicamento: $med")
+            require(med.dosis > 0) { "La dosis debe ser mayor a 0" }
+            require(med.repeticion >= 0) { "La repetición debe ser mayor o igual a 0" }
+        }
+
+        println("🔵 [DEBUG-SERVICE] Llamando a repository.updateTratamiento...")
+        return repository.updateTratamiento(id, request)
     }
 
     suspend fun deleteTratamiento(id: UUID) = repository.deleteTratamiento(id)

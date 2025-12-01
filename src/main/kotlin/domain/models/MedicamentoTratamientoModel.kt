@@ -11,6 +11,7 @@ import java.util.UUID
 data class MedicamentoTratamiento(
     @Serializable(with = UUIDSerializer::class)
     val medicamentoId: UUID,
+    val nombre: String,
     val dosis: Float,
     val repeticion: Float,
     @Serializable(with = InstantSerializer::class)

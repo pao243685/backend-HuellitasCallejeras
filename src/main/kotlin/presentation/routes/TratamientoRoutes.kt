@@ -76,7 +76,9 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
 
         post {
             try {
+                println("🔵 [DEBUG] Iniciando endpoint POST /tratamientos")
                 val multipart = call.receiveMultipart()
+                println("🔵 [DEBUG] Multipart recibido correctamente")
 
                 var tratamientoRequest: TratamientoRequestSinReceta? = null
                 var archivoBytes: ByteArray? = null
@@ -85,32 +87,53 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                 multipart.forEachPart { part ->
                     when (part) {
                         is PartData.FormItem -> {
+                            println("🔵 [DEBUG] Procesando FormItem: ${part.name} = ${part.value.take(100)}...")
                             when (part.name) {
                                 "tratamiento" -> {
                                     try {
+                                        println("🔵 [DEBUG] Intentando parsear JSON del tratamiento...")
                                         tratamientoRequest = Json.decodeFromString<TratamientoRequestSinReceta>(part.value)
+                                        println("🔵 [DEBUG] JSON parseado exitosamente: $tratamientoRequest")
                                     } catch (e: Exception) {
-                                        // Error parsing JSON will be handled below
+                                        println("🔴 [ERROR] Error parseando JSON: ${e.message}")
+                                        println("🔴 [ERROR] JSON recibido: ${part.value}")
+                                        e.printStackTrace()
                                     }
+                                }
+                                else -> {
+                                    println("🟡 [WARN] FormItem desconocido: ${part.name}")
                                 }
                             }
                         }
                         is PartData.FileItem -> {
+                            println("🔵 [DEBUG] Procesando FileItem: ${part.name}, filename: ${part.originalFileName}, contentType: ${part.contentType}")
                             if (part.name == "archivo") {
                                 try {
                                     archivoBytes = part.streamProvider().readBytes()
                                     contentType = part.contentType?.toString() ?: "application/octet-stream"
+                                    println("🔵 [DEBUG] Archivo leído: ${archivoBytes?.size} bytes, contentType: $contentType")
                                 } catch (e: Exception) {
-                                    // Error reading file will be handled below
+                                    println("🔴 [ERROR] Error leyendo archivo: ${e.message}")
+                                    e.printStackTrace()
                                 }
+                            } else {
+                                println("🟡 [WARN] FileItem desconocido: ${part.name}")
                             }
                         }
-                        else -> {}
+                        else -> {
+                            println("🟡 [WARN] Tipo de part desconocido: ${part::class.simpleName}")
+                        }
                     }
                     part.dispose()
                 }
 
+                println("🔵 [DEBUG] Validando datos recibidos...")
+                println("🔵 [DEBUG] tratamientoRequest: $tratamientoRequest")
+                println("🔵 [DEBUG] archivoBytes size: ${archivoBytes?.size}")
+                println("🔵 [DEBUG] contentType: $contentType")
+
                 if (tratamientoRequest == null) {
+                    println("🔴 [ERROR] tratamientoRequest es null")
                     return@post call.respond(
                         HttpStatusCode.BadRequest,
                         ApiResponse<Any>(false, "Datos del tratamiento son requeridos")
@@ -118,25 +141,31 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                 }
 
                 if (archivoBytes == null) {
+                    println("🔴 [ERROR] archivoBytes es null")
                     return@post call.respond(
                         HttpStatusCode.BadRequest,
                         ApiResponse<Any>(false, "El archivo de receta es requerido")
                     )
                 }
 
+                println("🔵 [DEBUG] Subiendo archivo a S3...")
                 val uploadResult = S3Service.uploadFile(
                     archivoBytes,
                     contentType!!,
                     "tratamientos"
                 )
 
+                println("🔵 [DEBUG] Resultado de S3: ${uploadResult.success}, mensaje: ${uploadResult.message}, url: ${uploadResult.url}")
+
                 if (!uploadResult.success) {
+                    println("🔴 [ERROR] Error subiendo archivo a S3: ${uploadResult.message}")
                     return@post call.respond(
                         HttpStatusCode.InternalServerError,
                         ApiResponse<Any>(false, "Error subiendo archivo: ${uploadResult.message}")
                     )
                 }
 
+                println("🔵 [DEBUG] Creando tratamiento completo...")
                 val tratamientoCompleto = TratamientoRequest(
                     fechaInicio = tratamientoRequest.fechaInicio,
                     receta = uploadResult.url,
@@ -144,14 +173,19 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                     medicamentos = tratamientoRequest.medicamentos
                 )
 
+                println("🔵 [DEBUG] TratamientoRequest completo: $tratamientoCompleto")
+                println("🔵 [DEBUG] Llamando a service.createTratamiento...")
+
                 val tratamiento = service.createTratamiento(tratamientoCompleto)
 
                 if (tratamiento != null) {
+                    println("🟢 [SUCCESS] Tratamiento creado exitosamente: $tratamiento")
                     call.respond(
                         HttpStatusCode.Created,
                         ApiResponse(true, "Tratamiento creado", tratamiento)
                     )
                 } else {
+                    println("🔴 [ERROR] service.createTratamiento retornó null")
                     call.respond(
                         HttpStatusCode.InternalServerError,
                         ApiResponse<Any>(false, "Error creando tratamiento en base de datos")
@@ -159,6 +193,8 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                 }
 
             } catch (e: Exception) {
+                println("🔴 [ERROR] Excepción general en endpoint: ${e.message}")
+                e.printStackTrace()
                 call.respond(
                     HttpStatusCode.BadRequest,
                     ApiResponse<Any>(false, e.message ?: "Error interno del servidor")
@@ -168,70 +204,141 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
 
         put("/{id}") {
             try {
+                println("🔵 [DEBUG] Iniciando endpoint PUT /tratamientos/{id}")
+
                 val rawId = call.parameters["id"]
                 val id = try {
                     UUID.fromString(rawId)
                 } catch (e: Exception) {
+                    println("🔴 [ERROR] ID inválido: $rawId")
                     return@put call.respond(
                         HttpStatusCode.BadRequest,
                         ApiResponse<Any>(false, "ID inválido")
                     )
                 }
 
+                println("🔵 [DEBUG] ID del tratamiento a actualizar: $id")
                 val multipart = call.receiveMultipart()
+                println("🔵 [DEBUG] Multipart recibido correctamente")
 
+                var tratamientoRequest: TratamientoRequestSinReceta? = null
                 var archivoBytes: ByteArray? = null
                 var contentType: String? = null
 
                 multipart.forEachPart { part ->
                     when (part) {
+                        is PartData.FormItem -> {
+                            println("🔵 [DEBUG] Procesando FormItem: ${part.name} = ${part.value.take(100)}...")
+                            when (part.name) {
+                                "tratamiento" -> {
+                                    try {
+                                        println("🔵 [DEBUG] Intentando parsear JSON del tratamiento...")
+                                        tratamientoRequest = Json.decodeFromString<TratamientoRequestSinReceta>(part.value)
+                                        println("🔵 [DEBUG] JSON parseado exitosamente: $tratamientoRequest")
+                                    } catch (e: Exception) {
+                                        println("🔴 [ERROR] Error parseando JSON: ${e.message}")
+                                        println("🔴 [ERROR] JSON recibido: ${part.value}")
+                                        e.printStackTrace()
+                                    }
+                                }
+                                else -> {
+                                    println("🟡 [WARN] FormItem desconocido: ${part.name}")
+                                }
+                            }
+                        }
                         is PartData.FileItem -> {
+                            println("🔵 [DEBUG] Procesando FileItem: ${part.name}, filename: ${part.originalFileName}, contentType: ${part.contentType}")
                             if (part.name == "archivo") {
                                 try {
                                     archivoBytes = part.streamProvider().readBytes()
                                     contentType = part.contentType?.toString() ?: "application/octet-stream"
+                                    println("🔵 [DEBUG] Archivo leído: ${archivoBytes?.size} bytes, contentType: $contentType")
                                 } catch (e: Exception) {
-                                    // Error reading file will be handled below
+                                    println("🔴 [ERROR] Error leyendo archivo: ${e.message}")
+                                    e.printStackTrace()
                                 }
+                            } else {
+                                println("🟡 [WARN] FileItem desconocido: ${part.name}")
                             }
                         }
-                        else -> {}
+                        else -> {
+                            println("🟡 [WARN] Tipo de part desconocido: ${part::class.simpleName}")
+                        }
                     }
                     part.dispose()
                 }
 
-                if (archivoBytes == null) {
+                println("🔵 [DEBUG] Validando datos recibidos...")
+                println("🔵 [DEBUG] tratamientoRequest: $tratamientoRequest")
+                println("🔵 [DEBUG] archivoBytes size: ${archivoBytes?.size}")
+                println("🔵 [DEBUG] contentType: $contentType")
+
+                if (tratamientoRequest == null) {
+                    println("🔴 [ERROR] tratamientoRequest es null")
                     return@put call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiResponse<Any>(false, "Archivo de receta requerido")
+                        ApiResponse<Any>(false, "Datos del tratamiento son requeridos")
                     )
                 }
 
-                // Subir archivo a S3 y obtener URL
+                if (archivoBytes == null) {
+                    println("🔴 [ERROR] archivoBytes es null")
+                    return@put call.respond(
+                        HttpStatusCode.BadRequest,
+                        ApiResponse<Any>(false, "El archivo de receta es requerido")
+                    )
+                }
+
+                println("🔵 [DEBUG] Subiendo archivo a S3...")
                 val uploadResult = S3Service.uploadFile(
                     archivoBytes,
                     contentType!!,
                     "tratamientos"
                 )
 
+                println("🔵 [DEBUG] Resultado de S3: ${uploadResult.success}, mensaje: ${uploadResult.message}, url: ${uploadResult.url}")
+
                 if (!uploadResult.success) {
+                    println("🔴 [ERROR] Error subiendo archivo a S3: ${uploadResult.message}")
                     return@put call.respond(
                         HttpStatusCode.InternalServerError,
                         ApiResponse<Any>(false, "Error subiendo archivo: ${uploadResult.message}")
                     )
                 }
 
-                // Actualizar tratamiento con la nueva URL de S3 usando el método existente
-                val updated = service.updateTratamiento(id, uploadResult.url)
-
-                call.respond(
-                    if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound,
-                    ApiResponse(updated, if (updated) "Tratamiento actualizado" else "Tratamiento no encontrado", null)
+                println("🔵 [DEBUG] Creando TratamientoRequest completo...")
+                val tratamientoCompleto = TratamientoRequest(
+                    fechaInicio = tratamientoRequest.fechaInicio,
+                    receta = uploadResult.url,
+                    animalId = tratamientoRequest.animalId,
+                    medicamentos = tratamientoRequest.medicamentos
                 )
+
+                println("🔵 [DEBUG] TratamientoRequest completo: $tratamientoCompleto")
+                println("🔵 [DEBUG] Llamando a service.updateTratamiento...")
+
+                val updated = service.updateTratamiento(id, tratamientoCompleto)
+
+                if (updated) {
+                    println("🟢 [SUCCESS] Tratamiento actualizado exitosamente")
+                    call.respond(
+                        HttpStatusCode.OK,
+                        ApiResponse(true, "Tratamiento actualizado", null)
+                    )
+                } else {
+                    println("🔴 [ERROR] service.updateTratamiento retornó false - tratamiento no encontrado")
+                    call.respond(
+                        HttpStatusCode.NotFound,
+                        ApiResponse<Any>(false, "Tratamiento no encontrado")
+                    )
+                }
+
             } catch (e: Exception) {
+                println("🔴 [ERROR] Excepción general en endpoint PUT: ${e.message}")
+                e.printStackTrace()
                 call.respond(
-                    HttpStatusCode.InternalServerError,
-                    ApiResponse<Any>(false, "Error: ${e.message}")
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Any>(false, e.message ?: "Error interno del servidor")
                 )
             }
         }
