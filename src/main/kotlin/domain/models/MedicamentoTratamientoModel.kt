@@ -1,5 +1,6 @@
 package com.example.domain.models
 
+import com.example.InstantSerializer
 import com.example.UUIDSerializer
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -10,12 +11,9 @@ import java.util.UUID
 data class MedicamentoTratamiento(
     @Serializable(with = UUIDSerializer::class)
     val medicamentoId: UUID,
-    val nombre: String? = null,
+    val nombre: String,
     val dosis: Float,
     val repeticion: Float,
-    @Contextual val fechaConclusion: Instant? = null
-)
-@Serializable
-data class MedicamentoTratamientoRequest(
-    val medicamentos: List<MedicamentoTratamiento>
+    @Serializable(with = InstantSerializer::class)
+    val fechaConclusion: Instant? = null
 )

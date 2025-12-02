@@ -1,5 +1,9 @@
 package com.example.config
 
+import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
+import aws.sdk.kotlin.services.s3.S3Client
+import aws.sdk.kotlin.services.s3.listObjectsV2
+import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import com.example.data.tables.repositories.AnimalRepositoryImpl
 import com.example.data.tables.repositories.CitaRepositoryImpl
 import com.example.data.tables.repositories.MedicamentoRepositoryImpl
@@ -11,15 +15,16 @@ import com.example.domain.models.services.AuthService
 import com.example.domain.models.services.CitaService
 import com.example.domain.models.services.MedicamentoService
 import com.example.domain.models.services.RescateService
+import com.example.domain.models.services.S3Service
 import com.example.domain.models.services.TratamientoService
 import com.example.presentation.routes.animalRoutes
 import com.example.presentation.routes.authRoutes
 import com.example.presentation.routes.citaRoutes
-import com.example.presentation.routes.fileRoutes
-//import com.example.presentation.routes.fileRoutes
 import com.example.presentation.routes.medicamentoRoutes
 import com.example.presentation.routes.rescateRoutes
 import com.example.presentation.routes.tratamientoRoutes
+import io.github.cdimascio.dotenv.dotenv
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
@@ -35,6 +40,7 @@ fun Application.configureRouting() {
     val medicamentoRepository = MedicamentoRepositoryImpl()
     val citaRepository = CitaRepositoryImpl()
 
+    // Inicializar servicios
     val authService = AuthService(rescatistaRepository)
     val animalService = AnimalService(animalRepository)
     val rescateService = RescateService(rescateRepository)
@@ -44,7 +50,6 @@ fun Application.configureRouting() {
 
     routing {
         route("/api") {
-            // Rutas públicas
             authRoutes(authService)
 
             get("/health") {
@@ -56,15 +61,44 @@ fun Application.configureRouting() {
                     )
                 )
             }
-            animalRoutes(animalService)
-            tratamientoRoutes(tratamientoService)
-            medicamentoRoutes(medicamentoService)
-            rescateRoutes(rescateService)
-            citaRoutes(citaService)
-            fileRoutes(animalRepository, tratamientoRepository)
+
+            get("/test-s3-connection") {
+                try {
+                    val env = dotenv {
+                        directory = "./"
+                        ignoreIfMissing = false
+                    }
+                    println("Bucket: ${env["AWS_S3_BUCKET"]}")
+
+                    val s3Client = S3Client {
+                        region = "us-east-1"
+                        credentialsProvider = StaticCredentialsProvider(
+                            Credentials(
+                                accessKeyId = env["AWS_ACCESS_KEY_ID"] ?: "",
+                                secretAccessKey = env["AWS_SECRET_ACCESS_KEY"] ?: "",
+                                sessionToken = env["AWS_SESSION_TOKEN"]
+                            )
+                        )
+                    }
+
+                    println("Cliente S3 creado:  ${s3Client}")
+
+                    call.respond("Cliente S3 - Bucket: ${env["AWS_S3_BUCKET"]}")
+
+                } catch (e: Exception) {
+                    println("Error creando cliente S3: ${e.message}")
+                    e.printStackTrace()
+
+                    call.respond("Error: ${e.message}")
+                }
+            }
+
             authenticate("auth-jwt") {
-
-
+                animalRoutes(animalService)
+                rescateRoutes(rescateService)
+                tratamientoRoutes(tratamientoService)
+                medicamentoRoutes(medicamentoService)
+                citaRoutes(citaService)
             }
         }
     }

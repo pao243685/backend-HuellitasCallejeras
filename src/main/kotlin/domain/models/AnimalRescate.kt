@@ -20,3 +20,4 @@ data class AnimalRescateResponse(
     val animal: Animal,
     val rescate: Rescate
 )
+

@@ -19,12 +19,16 @@ class AnimalService(private val repository: AnimalRepository) {
 
     suspend fun createAnimal(request: AnimalRequest): Animal? {
         validateAnimalRequest(request)
-        return repository.createAnimal(request)
+
+        val processedRequest = processImageUrl(request)
+        return repository.createAnimal(processedRequest)
     }
 
     suspend fun updateAnimal(id: UUID, request: AnimalRequest): Boolean {
         validateAnimalRequest(request)
-        return repository.updateAnimal(id, request)
+
+        val processedRequest = processImageUrl(request)
+        return repository.updateAnimal(id, processedRequest)
     }
 
     suspend fun deleteAnimal(id: UUID): Boolean {
@@ -46,7 +50,6 @@ class AnimalService(private val repository: AnimalRepository) {
         }
     }
 
-
     suspend fun createAnimalConRescate(
         animalRequest: AnimalRequest,
         rescateRequest: RescateRequestSinAnimalId
@@ -55,7 +58,8 @@ class AnimalService(private val repository: AnimalRepository) {
         require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
         require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
 
-        return repository.createAnimalConRescate(animalRequest, rescateRequest)
+        val processedAnimalRequest = processImageUrl(animalRequest)
+        return repository.createAnimalConRescate(processedAnimalRequest, rescateRequest)
     }
 
     suspend fun updateAnimalConRescate(
@@ -67,11 +71,33 @@ class AnimalService(private val repository: AnimalRepository) {
         require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
         require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
 
-        return repository.updateAnimalConRescate(animalId, animalRequest, rescateRequest)
+        val processedAnimalRequest = processImageUrl(animalRequest)
+        return repository.updateAnimalConRescate(animalId, processedAnimalRequest, rescateRequest)
     }
 
     suspend fun getAnimalConRescate(id: UUID): AnimalRescateResponse? {
         return repository.getAnimalConRescate(id)
+    }
+
+    private suspend fun processImageUrl(request: AnimalRequest): AnimalRequest {
+        val originalUrl = request.urlImage
+
+        if (originalUrl.isBlank() || originalUrl.contains("amazonaws.com")) {
+            return request
+        }
+
+        try {
+            val uploadResult = S3Service.uploadImageFromUrl(originalUrl)
+
+            if (uploadResult.success) {
+                return request.copy(urlImage = uploadResult.url)
+            } else {
+                return request
+            }
+        } catch (e: Exception) {
+            println("Error en imagen: ${e.message}")
+            return request
+        }
     }
 
 }
