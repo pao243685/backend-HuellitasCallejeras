@@ -17,11 +17,6 @@ fun Route.citaRoutes(service: CitaService) {
             call.respond(ApiResponse(true, "Citas obtenidas", citas))
         }
 
-        get("/pendientes") {
-            val citas = service.getCitasPendientes()
-            call.respond(ApiResponse(true, "Citas pendientes", citas))
-        }
-
         get("/{id}") {
             val idParam = call.parameters["id"]
             val id = try {
@@ -42,21 +37,6 @@ fun Route.citaRoutes(service: CitaService) {
                     ApiResponse<Any>(false, "No encontrada")
                 )
             }
-        }
-
-        get("/animal/{animalId}") {
-            val idParam = call.parameters["animalId"]
-            val animalId = try {
-                UUID.fromString(idParam)
-            } catch (e: Exception) {
-                return@get call.respond(
-                    HttpStatusCode.BadRequest,
-                    ApiResponse<Any>(false, "ID inválido (debe ser UUID)")
-                )
-            }
-
-            val citas = service.getCitasByAnimal(animalId)
-            call.respond(ApiResponse(true, "Citas del animal", citas))
         }
 
         post {

@@ -13,6 +13,7 @@ object DatabaseFactory {
             driverClassName = "org.postgresql.Driver"
             jdbcUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/huellitas_callejeras2"
             username = System.getenv("DB_USER") ?: "postgres"
+//            password = System.getenv("DB_PASSWORD") ?: "Perlita1610"
             password = System.getenv("DB_PASSWORD") ?: "123456"
             maximumPoolSize = 10
             isAutoCommit = false

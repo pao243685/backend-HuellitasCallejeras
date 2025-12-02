@@ -2,7 +2,6 @@ package com.example.config
 
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.S3Client
-import aws.sdk.kotlin.services.s3.listObjectsV2
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import com.example.data.tables.repositories.AnimalRepositoryImpl
 import com.example.data.tables.repositories.CitaRepositoryImpl
@@ -14,17 +13,13 @@ import com.example.domain.models.services.AnimalService
 import com.example.domain.models.services.AuthService
 import com.example.domain.models.services.CitaService
 import com.example.domain.models.services.MedicamentoService
-import com.example.domain.models.services.RescateService
-import com.example.domain.models.services.S3Service
 import com.example.domain.models.services.TratamientoService
 import com.example.presentation.routes.animalRoutes
 import com.example.presentation.routes.authRoutes
 import com.example.presentation.routes.citaRoutes
 import com.example.presentation.routes.medicamentoRoutes
-import com.example.presentation.routes.rescateRoutes
 import com.example.presentation.routes.tratamientoRoutes
 import io.github.cdimascio.dotenv.dotenv
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
@@ -43,7 +38,6 @@ fun Application.configureRouting() {
     // Inicializar servicios
     val authService = AuthService(rescatistaRepository)
     val animalService = AnimalService(animalRepository)
-    val rescateService = RescateService(rescateRepository)
     val tratamientoService = TratamientoService(tratamientoRepository)
     val medicamentoService = MedicamentoService(medicamentoRepository)
     val citaService = CitaService(citaRepository)
@@ -95,7 +89,6 @@ fun Application.configureRouting() {
 
             authenticate("auth-jwt") {
                 animalRoutes(animalService)
-                rescateRoutes(rescateService)
                 tratamientoRoutes(tratamientoService)
                 medicamentoRoutes(medicamentoService)
                 citaRoutes(citaService)

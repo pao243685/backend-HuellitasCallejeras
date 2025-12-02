@@ -101,10 +101,6 @@ object S3Service {
         }
     }
 
-    suspend fun close() {
-        s3Client.close()
-    }
-
     private fun getExtension(contentType: String): String {
         return when (contentType.lowercase()) {
             "image/jpeg", "image/jpg" -> "jpg"

@@ -17,26 +17,8 @@ class AnimalService(private val repository: AnimalRepository) {
         return repository.getAnimalById(id)
     }
 
-    suspend fun createAnimal(request: AnimalRequest): Animal? {
-        validateAnimalRequest(request)
-
-        val processedRequest = processImageUrl(request)
-        return repository.createAnimal(processedRequest)
-    }
-
-    suspend fun updateAnimal(id: UUID, request: AnimalRequest): Boolean {
-        validateAnimalRequest(request)
-
-        val processedRequest = processImageUrl(request)
-        return repository.updateAnimal(id, processedRequest)
-    }
-
     suspend fun deleteAnimal(id: UUID): Boolean {
         return repository.deleteAnimal(id)
-    }
-
-    suspend fun getAnimalByEstado(estado: String): List<Animal> {
-        return repository.getAnimalByEstado(estado)
     }
 
     private fun validateAnimalRequest(request: AnimalRequest) {

@@ -2,7 +2,6 @@ package com.example.config
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.auth0.jwt.interfaces.DecodedJWT
 import java.util.Date
 import java.util.UUID
 
@@ -21,12 +20,5 @@ object JwtConfig {
             .withClaim("nombre", nombre)
             .withExpiresAt(Date(System.currentTimeMillis() + validityInMs))
             .sign(algorithm)
-    }
-
-    fun verifyToken(token: String): DecodedJWT {
-        val verifier = JWT.require(algorithm)
-            .withIssuer(issuer)
-            .build()
-        return verifier.verify(token)
     }
 }

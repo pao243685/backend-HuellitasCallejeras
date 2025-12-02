@@ -11,11 +11,6 @@ class CitaService(private val repository: CitaRepository) {
 
     suspend fun getCitaById(id: UUID) = repository.getCitaById(id)
 
-    suspend fun getCitasByAnimal(animalId: UUID) =
-        repository.getCitasByAnimal(animalId)
-
-    suspend fun getCitasPendientes() = repository.getCitasPendientes()
-
     suspend fun createCita(request: CitaRequest): Cita? {
         require(request.motivo.isNotBlank()) { "El motivo no puede estar vacío" }
         require(request.lugar.isNotBlank()) { "El lugar no puede estar vacío" }

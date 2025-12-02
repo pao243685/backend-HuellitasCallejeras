@@ -2,7 +2,6 @@ package com.example.domain.models
 
 import com.example.InstantSerializer
 import com.example.UUIDSerializer
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.util.UUID
