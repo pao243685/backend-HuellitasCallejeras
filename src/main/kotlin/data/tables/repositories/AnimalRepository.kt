@@ -113,7 +113,7 @@ class AnimalRepositoryImpl : AnimalRepository {
     override suspend fun createAnimalConRescate(
         animalRequest: AnimalRequest,
         rescateRequest: RescateRequestSinAnimalId
-    ): AnimalRescateResponse? = dbQuery {
+    ): AnimalRescateResponse = dbQuery {
         val transactionResult = try {
             val animalInsert = animal.insert {
                 it[nombre] = animalRequest.nombre
@@ -126,14 +126,16 @@ class AnimalRepositoryImpl : AnimalRepository {
                 it[urlImage] = animalRequest.urlImage
                 it[rescatistaId] = animalRequest.rescatistaId
             }
-
+            println("animal a insertar: $animalInsert - $rescateRequest")
             val animalId = animalInsert[animal.id]
+            println("id animal: $animalId")
 
             val rescateInsert = Rescates.insert {
                 it[fechaIngreso] = Instant.now()
                 it[lugar] = rescateRequest.lugar
                 it[descripcion] = rescateRequest.descripcion
                 it[this.animalId] =  animalId
+                println("animal id a insertar: ${this.animalId}")
             }
 
             val animalCreado = animalInsert.resultedValues?.singleOrNull()?.toAnimal()
