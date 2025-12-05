@@ -33,17 +33,27 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/ktor-sample-all.jar"
-          target: "/home/ubuntu/app/"
+          target: "/home/ubuntu/app/ktor-sample-all.jar"
           overwrite: true
 
-      - name: SSH to EC2 and restart service
+      - name: Restart Ktor service
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/app
-            pkill -f 'ktor-sample-all.jar' || true
-            nohup java -jar ktor-sample-all.jar > logs.txt 2>&1 &
-            echo "App restarted"
+            echo "Stopping old service..."
+            sudo systemctl stop ktor || true
+
+            echo "Updating permissions..."
+            sudo chmod 755 /home/ubuntu/app/ktor-sample-all.jar
+
+            echo "Starting service..."
+            sudo systemctl start ktor
+
+            echo "Checking service status..."
+            sudo systemctl status ktor --no-pager
+
+            echo "Last logs:"
+            sudo journalctl -u ktor -n 20 --no-pager
