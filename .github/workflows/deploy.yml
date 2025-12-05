@@ -33,7 +33,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/ktor-sample-all.jar"
-          target: "/home/ubuntu/app/"
+          target: "/home/ubuntu/app/ktor-sample-all.jar"
 
       - name: SSH to EC2 and restart service
         uses: appleboy/ssh-action@v0.1.7
@@ -44,5 +44,5 @@ jobs:
           script: |
             cd /home/ubuntu/app
             pkill -f 'ktor-sample-all.jar' || true
-            nohup setsid java -jar ktor-sample-all.jar > logs.txt 2>&1 < /dev/null &
+            nohup java -jar ktor-sample-all.jar > logs.txt 2>&1 &
             echo "App restarted"
