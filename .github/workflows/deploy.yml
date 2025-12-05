@@ -36,7 +36,6 @@ jobs:
           source: "build/libs/ktor-sample-all.jar"
           target: "/home/ubuntu/app/"
 
-
       - name: SSH to EC2 and restart service
         uses: appleboy/ssh-action@v0.1.7
         with:
