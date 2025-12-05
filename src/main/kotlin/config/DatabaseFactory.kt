@@ -11,10 +11,9 @@ object DatabaseFactory {
     fun init() {
         val config = HikariConfig().apply {
             driverClassName = "org.postgresql.Driver"
-            jdbcUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/huellitas_callejeras2"
+            jdbcUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/huellitas_callejeras"
             username = System.getenv("DB_USER") ?: "postgres"
-//            password = System.getenv("DB_PASSWORD") ?: "Perlita1610"
-            password = System.getenv("DB_PASSWORD") ?: "123456"
+            password = System.getenv("DB_PASSWORD") ?: ""
             maximumPoolSize = 10
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
