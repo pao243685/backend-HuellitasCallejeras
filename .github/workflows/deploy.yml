@@ -34,6 +34,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/ktor-sample-all.jar"
           target: "/home/ubuntu/app/ktor-sample-all.jar"
+          strip_components: 2
 
       - name: SSH to EC2 and restart service
         uses: appleboy/ssh-action@v0.1.7
