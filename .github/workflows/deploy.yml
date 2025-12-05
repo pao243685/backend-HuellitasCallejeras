@@ -47,4 +47,3 @@ jobs:
             pkill -f 'ktor-sample-all.jar' || true
             nohup java -jar ktor-sample-all.jar > logs.txt 2>&1 &
             echo "App restarted"
-
