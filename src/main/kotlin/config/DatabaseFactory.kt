@@ -20,6 +20,7 @@ object DatabaseFactory {
             validate()
         }
 
+
         Database.connect(HikariDataSource(config))
     }
 
