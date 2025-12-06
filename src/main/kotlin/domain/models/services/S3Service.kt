@@ -2,36 +2,53 @@ package com.example.domain.models.services
 
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.PutObjectRequest
+import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.model.DeleteObjectRequest
+import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.content.ByteStream
+import io.github.cdimascio.dotenv.dotenv
 import java.net.URL
 import java.util.*
 
 object S3Service {
 
-    private const val bucketName = "aws-s3-huellitas-callejeras-2"
-    private const val region = "us-east-1"
+    private val env = dotenv {
+        directory = "./"
+        ignoreIfMissing = false
+    }
 
-    private val s3Client = S3Client {
-        this.region = S3Service.region
+    private val bucketName = env["AWS_S3_BUCKET"]
+        ?: throw IllegalStateException("AWS_S3_BUCKET no configurado")
+
+    private val region = env["AWS_REGION"] ?: "us-east-1"
+    private val accessKey = env["AWS_ACCESS_KEY_ID"] ?: ""
+    private val secretKey = env["AWS_SECRET_ACCESS_KEY"] ?: ""
+    private val sessionToken = env["AWS_SESSION_TOKEN"] ?: ""
+
+    init {
+        println("S3 Service con Bucket: $bucketName")
+    }
+
+    private val s3Client by lazy {
+        S3Client {
+            region = this@S3Service.region
+            credentialsProvider = StaticCredentialsProvider(
+                Credentials(
+                    accessKeyId = accessKey,
+                    secretAccessKey = secretKey,
+                    sessionToken = if (sessionToken.isNotBlank()) sessionToken else null
+                )
+            )
+        }
     }
 
     suspend fun uploadAnimalImage(
         imageBytes: ByteArray,
         contentType: String = "image/jpeg"
     ): com.example.domain.models.FileUploadResponse {
-
-        println("S3 DEBUG: Iniciando uploadAnimalImage")
-        println("S3 DEBUG: Bucket -> $bucketName")
-        println("S3 DEBUG: Region -> $region")
-        println("S3 DEBUG: Tamaño bytes -> ${imageBytes.size}")
-        println("S3 DEBUG: Content-Type -> $contentType")
-
         return try {
             val fileExtension = getExtension(contentType)
             val fileName = "animals/${UUID.randomUUID()}.$fileExtension"
-
-            println("S3 DEBUG: Archivo a subir -> $fileName")
 
             val request = PutObjectRequest {
                 bucket = bucketName
@@ -40,12 +57,9 @@ object S3Service {
                 this.contentType = contentType
             }
 
-            println("S3 DEBUG: Enviando solicitud a S3...")
             s3Client.putObject(request)
-            println("S3 DEBUG: Upload completado con éxito")
 
             val imageUrl = "https://$bucketName.s3.$region.amazonaws.com/$fileName"
-            println("S3 DEBUG: URL generada -> $imageUrl")
 
             com.example.domain.models.FileUploadResponse(
                 success = true,
@@ -54,90 +68,92 @@ object S3Service {
             )
 
         } catch (e: Exception) {
-            println("S3 ERROR en uploadAnimalImage: ${e.message}")
+            println("Error en uploadAnimalImage: ${e.message}")
             e.printStackTrace()
-
-            com.example.domain.models.FileUploadResponse(false, "Error subiendo imagen", "")
+            com.example.domain.models.FileUploadResponse(
+                success = false,
+                message = "Error subiendo imagen: ${e.message}",
+                url = ""
+            )
         }
     }
 
     suspend fun uploadImageFromUrl(imageUrl: String): com.example.domain.models.FileUploadResponse {
-        println("S3 DEBUG: Iniciando upload desde URL -> $imageUrl")
-
         return try {
             val url = URL(imageUrl)
             val connection = url.openConnection()
             connection.connect()
 
-            val bytes = connection.getInputStream().readAllBytes()
+            val inputStream = connection.getInputStream()
+            val imageBytes = inputStream.readAllBytes()
+            inputStream.close()
+
             val contentType = connection.contentType ?: "image/jpeg"
 
-            println("S3 DEBUG: Bytes descargados -> ${bytes.size}")
-            println("S3 DEBUG: Tipo detectado -> $contentType")
-
-            uploadAnimalImage(bytes, contentType)
+            uploadAnimalImage(imageBytes, contentType)
 
         } catch (e: Exception) {
-            println("S3 ERROR en uploadImageFromUrl: ${e.message}")
-            com.example.domain.models.FileUploadResponse(false, "Error procesando URL", "")
+            com.example.domain.models.FileUploadResponse(
+                success = false,
+                message = "Error procesando imagen desde URL: ${e.message}",
+                url = ""
+            )
         }
     }
 
-    private fun getExtension(contentType: String): String =
-        when (contentType.lowercase()) {
+    private fun getExtension(contentType: String): String {
+        return when (contentType.lowercase()) {
             "image/jpeg", "image/jpg" -> "jpg"
             "image/png" -> "png"
             "image/gif" -> "gif"
             "image/webp" -> "webp"
+
             "application/pdf" -> "pdf"
             "application/msword" -> "doc"
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> "docx"
             else -> "bin"
         }
+    }
 
     suspend fun deleteImage(fileName: String): Boolean {
-        println("S3 DEBUG: Eliminando archivo -> $fileName")
-
         return try {
-            val req = DeleteObjectRequest {
+
+            val request = DeleteObjectRequest {
                 bucket = bucketName
                 key = fileName
             }
 
-            s3Client.deleteObject(req)
-            println("S3 DEBUG: Eliminación exitosa")
+            s3Client.deleteObject(request)
+            println("Archivo eliminado de s3: $fileName")
             true
-
         } catch (e: Exception) {
-            println("S3 ERROR al eliminar: ${e.message}")
+            println("Error eliminando archivo de s3 $fileName: ${e.message}")
             false
         }
     }
 
     fun extractFileNameFromS3Url(url: String): String {
-        val prefix = "https://$bucketName.s3.$region.amazonaws.com/"
-        return if (url.startsWith(prefix)) {
-            url.substring(prefix.length)
-        } else {
-            url.substringAfter("amazonaws.com/")
+        return try {
+            val prefix = "https://$bucketName.s3.$region.amazonaws.com/"
+            if (url.startsWith(prefix)) {
+                url.substring(prefix.length)
+            } else {
+                url.substringAfter("amazonaws.com/")
+            }
+        } catch (e: Exception) {
+            throw IllegalArgumentException("URL de S3 inválida: $url")
         }
     }
+
 
     suspend fun uploadFile(
         fileBytes: ByteArray,
         contentType: String,
         folder: String = "files"
     ): com.example.domain.models.FileUploadResponse {
-
-        println("S3 DEBUG: Iniciando uploadFile")
-        println("S3 DEBUG: folder -> $folder")
-        println("S3 DEBUG: bytes -> ${fileBytes.size}")
-
         return try {
-            val extension = getExtension(contentType)
-            val fileName = "$folder/${UUID.randomUUID()}.$extension"
-
-            println("S3 DEBUG: Archivo a subir -> $fileName")
+            val fileExtension = getExtension(contentType)
+            val fileName = "$folder/${UUID.randomUUID()}.$fileExtension"
 
             val request = PutObjectRequest {
                 bucket = bucketName
@@ -146,20 +162,24 @@ object S3Service {
                 this.contentType = contentType
             }
 
-            println("S3 DEBUG: Subiendo archivo...")
-            s3Client.putObject(request)
-            println("S3 DEBUG: Upload completado")
+            val response = s3Client.putObject(request)
 
-            val url = "https://$bucketName.s3.$region.amazonaws.com/$fileName"
-            println("S3 DEBUG: URL resultante -> $url")
+            val fileUrl = "https://$bucketName.s3.$region.amazonaws.com/$fileName"
 
-            com.example.domain.models.FileUploadResponse(true, "Archivo subido", url)
+            com.example.domain.models.FileUploadResponse(
+                success = true,
+                message = "Archivo subido exitosamente",
+                url = fileUrl
+            )
 
         } catch (e: Exception) {
-            println("S3 ERROR en uploadFile: ${e.message}")
-            com.example.domain.models.FileUploadResponse(false, "Error subiendo archivo", "")
+            println("Error subiendo archivo: ${e.message}")
+            com.example.domain.models.FileUploadResponse(
+                success = false,
+                message = "Error subiendo archivo: ${e.message}",
+                url = ""
+            )
         }
     }
+
 }
-
-

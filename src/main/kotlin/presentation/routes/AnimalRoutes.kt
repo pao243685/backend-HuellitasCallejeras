@@ -166,8 +166,6 @@ fun Route.animalRoutes(service: AnimalService) {
 
         post("/crear-con-rescate") {
             try {
-                println("DEBUG /crear-con-rescate: Inicio de solicitud multipart")
-
                 val multipart = call.receiveMultipart()
 
                 var animalRequestsinImagen: AnimalRequestsinImagen? = null
@@ -176,94 +174,68 @@ fun Route.animalRoutes(service: AnimalService) {
                 var contentType: String? = null
 
                 multipart.forEachPart { part ->
-                    println("DEBUG Multipart Part: name=${part.name}, type=${part::class.simpleName}")
-
                     when (part) {
                         is PartData.FormItem -> {
-                            println("DEBUG FormItem recibido: ${part.name}")
-
                             when (part.name) {
                                 "animal" -> {
-                                    println("DEBUG Decodificando JSON de animal")
                                     animalRequestsinImagen = Json.decodeFromString<AnimalRequestsinImagen>(part.value)
-                                    println("DEBUG AnimalRequestsinImagen: $animalRequestsinImagen")
                                 }
-
                                 "rescate" -> {
-                                    println("DEBUG Decodificando JSON de rescate")
                                     rescateRequest = Json.decodeFromString<RescateRequestSinAnimalId>(part.value)
-                                    println("DEBUG RescateRequest: $rescateRequest")
-                                }
-
-                                else -> {
-                                    println("DEBUG FormItem desconocido ignorado: ${part.name}")
                                 }
                             }
                         }
-
                         is PartData.FileItem -> {
-                            println("DEBUG FileItem recibido: ${part.name}")
-
                             if (part.name == "imagen") {
-                                println("DEBUG Leyendo bytes de imagen...")
-
-                                val bytes = part.streamProvider().readBytes()
-                                println("DEBUG Tamaño imagen: ${bytes.size} bytes")
-
-                                imageBytes = bytes
+                                imageBytes = part.streamProvider().readBytes()
                                 contentType = part.contentType?.toString() ?: "image/jpeg"
-
-                                println("DEBUG Content-Type imagen: $contentType")
-                            } else {
-                                println("DEBUG FileItem desconocido: ${part.name}")
                             }
                         }
 
-                        else -> {
-                            println("DEBUG Parte desconocida ignorada")
-                        }
+                        else -> {}
                     }
-
                     part.dispose()
                 }
 
-                // Validaciones con debug
-
                 if (animalRequestsinImagen == null) {
-                    println("DEBUG Error: animalRequestsinImagen es null")
                     return@post call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiResponse<Any>(false, "Datos de animal son requeridos")
+                        ApiResponse<Any>(
+                            success = false,
+                            message = "Datos de animal son requeridos"
+                        )
                     )
                 }
 
                 if (rescateRequest == null) {
-                    println("DEBUG Error: rescateRequest es null")
                     return@post call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiResponse<Any>(false, "Datos de rescate son requeridos")
+                        ApiResponse<Any>(
+                            success = false,
+                            message = "Datos de rescate son requeridos"
+                        )
                     )
                 }
 
                 if (imageBytes == null) {
-                    println("DEBUG Error: imageBytes es null")
                     return@post call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiResponse<Any>(false, "La imagen es requerida")
+                        ApiResponse<Any>(
+                            success = false,
+                            message = "La imagen es requerida"
+                        )
                     )
                 }
 
-                println("DEBUG Llamando a S3Service.uploadAnimalImage...")
-
                 val uploadResult = S3Service.uploadAnimalImage(imageBytes!!, contentType!!)
 
-                println("DEBUG Resultado upload S3: success=${uploadResult.success}, url=${uploadResult.url}, message=${uploadResult.message}")
-
                 if (!uploadResult.success) {
-                    println("DEBUG Error subiendo imagen a S3")
                     return@post call.respond(
                         HttpStatusCode.InternalServerError,
-                        ApiResponse<Any>(false, "Error subiendo imagen: ${uploadResult.message}")
+                        ApiResponse<Any>(
+                            success = false,
+                            message = "Error subiendo imagen: ${uploadResult.message}"
+                        )
                     )
                 }
 
@@ -280,41 +252,45 @@ fun Route.animalRoutes(service: AnimalService) {
                     rescatistaId = animalRequestsinImagen.rescatistaId
                 )
 
-                println("DEBUG Enviando a service.createAnimalConRescate")
                 val resultado = service.createAnimalConRescate(animalRequest, rescateRequest!!)
-
-                println("DEBUG Resultado createAnimalConRescate: $resultado")
 
                 if (resultado != null) {
                     call.respond(
                         HttpStatusCode.Created,
-                        ApiResponse(true, "Animal y rescate creados exitosamente", resultado)
+                        ApiResponse(
+                            success = true,
+                            message = "Animal y rescate creados exitosamente",
+                            data = resultado
+                        )
                     )
                 } else {
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ApiResponse<Any>(false, "Error al crear animal y rescate")
+                        ApiResponse<Any>(
+                            success = false,
+                            message = "Error al crear animal y rescate"
+                        )
                     )
                 }
 
             } catch (e: IllegalArgumentException) {
-                println("DEBUG IllegalArgumentException: ${e.message}")
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ApiResponse<Any>(false, "Datos inválidos: ${e.message}")
+                    ApiResponse<Any>(
+                        success = false,
+                        message = "Datos inválidos: ${e.message}"
+                    )
                 )
-
             } catch (e: Exception) {
-                println("DEBUG Exception general: ${e.message}")
-                e.printStackTrace()
-
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    ApiResponse<Any>(false, "Error: ${e.message}")
+                    ApiResponse<Any>(
+                        success = false,
+                        message = "Error: ${e.message}"
+                    )
                 )
             }
         }
-
 
         put("/{id}/actualizar-con-rescate") {
             try {
