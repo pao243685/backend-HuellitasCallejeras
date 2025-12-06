@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import java.time.Instant
+import com.example.InstantSerializer
 
 fun Application.configureSerialization() {
     install(ContentNegotiation) {
@@ -20,20 +21,5 @@ fun Application.configureSerialization() {
                 contextual(Instant::class, InstantSerializer)
             }
         })
-    }
-}
-
-object InstantSerializer : kotlinx.serialization.KSerializer<Instant> {
-    override val descriptor = kotlinx.serialization.descriptors.PrimitiveSerialDescriptor(
-        "Instant",
-        kotlinx.serialization.descriptors.PrimitiveKind.STRING
-    )
-
-    override fun serialize(encoder: kotlinx.serialization.encoding.Encoder, value: Instant) {
-        encoder.encodeString(value.toString())
-    }
-
-    override fun deserialize(decoder: kotlinx.serialization.encoding.Decoder): Instant {
-        return Instant.parse(decoder.decodeString())
     }
 }
