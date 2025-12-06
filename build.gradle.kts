@@ -48,6 +48,10 @@ dependencies {
     implementation("io.ktor:ktor-server-auto-head-response:2.3.7")
 
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+
+    implementation("software.amazon.awssdk:s3:2.25.0")
+    implementation("software.amazon.awssdk:auth:2.25.0")
+    implementation("software.amazon.awssdk:regions:2.25.0")
 }
 
 
