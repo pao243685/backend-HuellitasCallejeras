@@ -17,13 +17,11 @@ object S3Service {
         ignoreIfMissing = false
     }
 
-    private val bucketName = env["AWS_S3_BUCKET"]
-        ?: throw IllegalStateException("AWS_S3_BUCKET no configurado")
-
-    private val region = env["AWS_REGION"] ?: "us-east-1"
-    private val accessKey = env["AWS_ACCESS_KEY_ID"] ?: ""
-    private val secretKey = env["AWS_SECRET_ACCESS_KEY"] ?: ""
-    private val sessionToken = env["AWS_SESSION_TOKEN"] ?: ""
+    private val bucketName = "aws-s3-huellitas-callejeras-2"
+    private val region = "us-east-1"
+    private val accessKey = "ASIAX2MJDTXZGY52MY5I"
+    private val secretKey = "SIPg9em1MvhNsIRJ3JOEJOa11/yy7E2IadBr/JJe"
+    private val sessionToken = "IQoJb3JpZ2luX2VjEKP//////////wEaCXVzLXdlc3QtMiJIMEYCIQD5OuNODkku+yLF8H6vj/jrqaWhcSym1WdTu9J0ASuL0gIhALiNHhp/UgfwWN1rFOoM5ajawoxv1GPVgpK/k3FcDuheKrcCCGwQAhoMNTM3Njk1MzI5Nzc4IgwDPXu3s/CijkxXZIAqlAIBQXS7euud29CwjtVB8wx6nwO4ngr4Op761/dzU6TJA8KPACkYsEADypEHWidjC4tVFpyLWYGtKmeIOkntS1WXmqUSzkcky5pm9TULSyJYoLp9pfbCOwPdJpzttPH7mZnxsEcDGFsm+xeAnirujHsNKORLEet+P1iS5lROISZCUas3jNhp7cE97uqREfuGoc/61fGzpBFVvZ+dtuTRjDfSOWOVOeJA7i/IdftX5Ih6no+ZN7+GM6fCxlFeyWoHVkihzZIOIqUwzI9tiykXuIVhbLM+d1po+kIEo+zf9e74/JGl79EzxvfHzKVtYom5s7ZHqCWtGQNb7bglQYSPOlsjMhlcpq+BTGcIb41kvIUnZgyEGrww4bDOyQY6nAFByhRtrfcfDmxRZmLHEgY1m6qM1tPOc238W4xHD+FLO9oLyDws/ufUOHdIPzIwgsZer9POUvaXz6FKDfO0+mJgXAg8znW7AEcOCNhM1vSQ+/psQs7GaigP6imaWJvMuQzeIV1NOAIFpFVXj27eXrhD1S90oEnri0NdqmbBTT69BRbScoFYk/jP90bw4dPuFPY8bqFGbeukT50x1nM="
 
     init {
         println("S3 Service con Bucket: $bucketName")
