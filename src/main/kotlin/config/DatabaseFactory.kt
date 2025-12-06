@@ -16,8 +16,8 @@ object DatabaseFactory {
             username = System.getenv("DB_USER") ?: "postgres"
 //            password = System.getenv("DB_PASSWORD") ?: "Perlita1610"
 //            password = System.getenv("DB_PASSWORD") ?: "123456"
-//            password = System.getenv("DB_PASSWORD") ?: "huellitas123"
-            password = System.getenv("DB_PASSWORD") ?: "2006"
+            password = System.getenv("DB_PASSWORD") ?: "huellitas123"
+//            password = System.getenv("DB_PASSWORD") ?: "2006"
             maximumPoolSize = 10
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
