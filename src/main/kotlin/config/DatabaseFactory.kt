@@ -11,8 +11,8 @@ object DatabaseFactory {
     fun init() {
         val config = HikariConfig().apply {
             driverClassName = "org.postgresql.Driver"
-            jdbcUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://34.195.100.95:5432/huellitas_callejeras"
-//            jdbcUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://127.0.0.1:5432/huellitas_callejeras5"
+//            jdbcUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://34.195.100.95:5432/huellitas_callejeras"
+            jdbcUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/huellitas_callejeras"
             username = System.getenv("DB_USER") ?: "postgres"
 //            password = System.getenv("DB_PASSWORD") ?: "Perlita1610"
 //            password = System.getenv("DB_PASSWORD") ?: "123456"
