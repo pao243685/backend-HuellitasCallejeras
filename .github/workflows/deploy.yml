@@ -34,6 +34,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/ktor-sample-all.jar"
           target: "/home/ubuntu/app/"
+          strip_components: 2
           overwrite: true
 
       - name: Restart Ktor service
