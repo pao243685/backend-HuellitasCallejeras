@@ -31,6 +31,7 @@ fun Application.module() {
         level = Level.INFO
     }
 
+
     install(CORS) {
         anyHost()
         allowHeader("Content-Type")
