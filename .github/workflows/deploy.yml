@@ -37,6 +37,7 @@ jobs:
           strip_components: 2
           overwrite: true
 
+
       - name: Restart Ktor service
         uses: appleboy/ssh-action@v0.1.7
         with:
