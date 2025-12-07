@@ -3,11 +3,10 @@ package com.example.presentation.routes
 import com.example.domain.models.ApiResponse
 import com.example.domain.models.TratamientoRequest
 import com.example.domain.models.TratamientoRequestSinReceta
-import com.example.domain.models.services.S3Service
+import com.example.domain.models.services.FileService
 import com.example.domain.models.services.TratamientoService
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
-import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import java.util.UUID
@@ -15,7 +14,6 @@ import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
 import io.ktor.server.request.receiveMultipart
 import kotlinx.serialization.json.Json
-import java.time.Instant
 
 fun Route.tratamientoRoutes(service: TratamientoService) {
     route("/tratamientos") {
@@ -87,8 +85,7 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                         is PartData.FormItem -> {
                             if (part.name == "tratamiento") {
                                 try {
-                                    tratamientoRequest =
-                                        Json.decodeFromString<TratamientoRequestSinReceta>(part.value)
+                                    tratamientoRequest = Json.decodeFromString<TratamientoRequestSinReceta>(part.value)
                                 } catch (_: Exception) {}
                             }
                         }
@@ -119,8 +116,8 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                     )
                 }
 
-                val uploadResult = S3Service.uploadFile(
-                    archivoBytes,
+                val uploadResult = FileService.uploadFile(
+                    archivoBytes!!,
                     contentType ?: "application/octet-stream",
                     "tratamientos"
                 )
@@ -223,8 +220,15 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                 var recetaFinal = tratamientoExistente.receta
 
                 if (archivoBytes != null) {
-                    val uploadResult = S3Service.uploadFile(
-                        archivoBytes,
+                    if (tratamientoExistente.receta.startsWith("/uploads/")) {
+                        try {
+                            FileService.deleteFile(tratamientoExistente.receta)
+                        } catch (e: Exception) {
+                        }
+                    }
+
+                    val uploadResult = FileService.uploadFile(
+                        archivoBytes!!,
                         contentType ?: "application/octet-stream",
                         "tratamientos"
                     )
@@ -236,7 +240,7 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                         )
                     }
 
-                    recetaFinal = uploadResult.url!!
+                    recetaFinal = uploadResult.url
                 }
 
                 val tratamientoCompleto = TratamientoRequest(
@@ -279,7 +283,16 @@ fun Route.tratamientoRoutes(service: TratamientoService) {
                 )
             }
 
+            val tratamiento = service.getTratamientoById(id)
+
             val deleted = service.deleteTratamiento(id)
+
+            if (deleted && tratamiento != null && tratamiento.receta.startsWith("/uploads/")) {
+                try {
+                    FileService.deleteFile(tratamiento.receta)
+                } catch (e: Exception) {
+                }
+            }
 
             call.respond(
                 if (deleted) HttpStatusCode.OK else HttpStatusCode.NotFound,

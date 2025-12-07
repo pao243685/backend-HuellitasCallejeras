@@ -42,8 +42,6 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jvm:2.3.12")
     implementation("io.ktor:ktor-server-auth-jwt-jvm:2.3.12")
 
-    implementation("aws.sdk.kotlin:s3:1.0.30")
-    implementation("aws.smithy.kotlin:http-client-engine-crt:1.0.15")
     implementation("io.ktor:ktor-server-partial-content:2.3.7")
     implementation("io.ktor:ktor-server-auto-head-response:2.3.7")
 

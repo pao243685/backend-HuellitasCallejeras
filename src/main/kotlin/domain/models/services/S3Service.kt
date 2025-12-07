@@ -1,67 +1,35 @@
 package com.example.domain.models.services
 
-import aws.sdk.kotlin.services.s3.S3Client
-import aws.sdk.kotlin.services.s3.model.PutObjectRequest
-import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
-import aws.sdk.kotlin.services.s3.model.DeleteObjectRequest
-import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-import aws.smithy.kotlin.runtime.content.ByteStream
-import io.github.cdimascio.dotenv.dotenv
-import java.net.URL
+import com.example.domain.models.FileUploadResponse
+import java.io.File
 import java.util.*
 
-object S3Service {
+object FileService {
 
-    private val env = dotenv {
-        directory = "./"
-        ignoreIfMissing = false
-    }
-
-    private val bucketName = env["AWS_S3_BUCKET"]
-        ?: throw IllegalStateException("AWS_S3_BUCKET no configurado")
-
-    private val region = env["AWS_REGION"] ?: "us-east-1"
-    private val accessKey = env["AWS_ACCESS_KEY_ID"] ?: ""
-    private val secretKey = env["AWS_SECRET_ACCESS_KEY"] ?: ""
-    private val sessionToken = env["AWS_SESSION_TOKEN"] ?: ""
+    private val baseUploadDir = File("uploads")
+    private val animalsDir = File(baseUploadDir, "animals")
+    private val treatmentsDir = File(baseUploadDir, "tratamientos")
 
     init {
-        println("S3 Service con Bucket: $bucketName")
-    }
-
-    private val s3Client by lazy {
-        S3Client {
-            region = this@S3Service.region
-            credentialsProvider = StaticCredentialsProvider(
-                Credentials(
-                    accessKeyId = accessKey,
-                    secretAccessKey = secretKey,
-                    sessionToken = if (sessionToken.isNotBlank()) sessionToken else null
-                )
-            )
-        }
+        animalsDir.mkdirs()
+        treatmentsDir.mkdirs()
+        println("FileService inicializado con directorio: ${baseUploadDir.absolutePath}")
     }
 
     suspend fun uploadAnimalImage(
         imageBytes: ByteArray,
         contentType: String = "image/jpeg"
-    ): com.example.domain.models.FileUploadResponse {
+    ): FileUploadResponse {
         return try {
             val fileExtension = getExtension(contentType)
-            val fileName = "animals/${UUID.randomUUID()}.$fileExtension"
+            val fileName = "${UUID.randomUUID()}.$fileExtension"
+            val file = File(animalsDir, fileName)
 
-            val request = PutObjectRequest {
-                bucket = bucketName
-                key = fileName
-                body = ByteStream.fromBytes(imageBytes)
-                this.contentType = contentType
-            }
+            file.writeBytes(imageBytes)
 
-            s3Client.putObject(request)
+            val imageUrl = "/uploads/animals/$fileName"
 
-            val imageUrl = "https://$bucketName.s3.$region.amazonaws.com/$fileName"
-
-            com.example.domain.models.FileUploadResponse(
+            FileUploadResponse(
                 success = true,
                 message = "Imagen de animal subida exitosamente",
                 url = imageUrl
@@ -70,7 +38,7 @@ object S3Service {
         } catch (e: Exception) {
             println("Error en uploadAnimalImage: ${e.message}")
             e.printStackTrace()
-            com.example.domain.models.FileUploadResponse(
+            FileUploadResponse(
                 success = false,
                 message = "Error subiendo imagen: ${e.message}",
                 url = ""
@@ -78,95 +46,27 @@ object S3Service {
         }
     }
 
-    suspend fun uploadImageFromUrl(imageUrl: String): com.example.domain.models.FileUploadResponse {
-        return try {
-            val url = URL(imageUrl)
-            val connection = url.openConnection()
-            connection.connect()
-
-            val inputStream = connection.getInputStream()
-            val imageBytes = inputStream.readAllBytes()
-            inputStream.close()
-
-            val contentType = connection.contentType ?: "image/jpeg"
-
-            uploadAnimalImage(imageBytes, contentType)
-
-        } catch (e: Exception) {
-            com.example.domain.models.FileUploadResponse(
-                success = false,
-                message = "Error procesando imagen desde URL: ${e.message}",
-                url = ""
-            )
-        }
-    }
-
-    private fun getExtension(contentType: String): String {
-        return when (contentType.lowercase()) {
-            "image/jpeg", "image/jpg" -> "jpg"
-            "image/png" -> "png"
-            "image/gif" -> "gif"
-            "image/webp" -> "webp"
-
-            "application/pdf" -> "pdf"
-            "application/msword" -> "doc"
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> "docx"
-            else -> "bin"
-        }
-    }
-
-    suspend fun deleteImage(fileName: String): Boolean {
-        return try {
-
-            val request = DeleteObjectRequest {
-                bucket = bucketName
-                key = fileName
-            }
-
-            s3Client.deleteObject(request)
-            println("Archivo eliminado de s3: $fileName")
-            true
-        } catch (e: Exception) {
-            println("Error eliminando archivo de s3 $fileName: ${e.message}")
-            false
-        }
-    }
-
-    fun extractFileNameFromS3Url(url: String): String {
-        return try {
-            val prefix = "https://$bucketName.s3.$region.amazonaws.com/"
-            if (url.startsWith(prefix)) {
-                url.substring(prefix.length)
-            } else {
-                url.substringAfter("amazonaws.com/")
-            }
-        } catch (e: Exception) {
-            throw IllegalArgumentException("URL de S3 inválida: $url")
-        }
-    }
-
-
     suspend fun uploadFile(
         fileBytes: ByteArray,
         contentType: String,
-        folder: String = "files"
-    ): com.example.domain.models.FileUploadResponse {
+        folder: String = "tratamientos"
+    ): FileUploadResponse {
         return try {
             val fileExtension = getExtension(contentType)
-            val fileName = "$folder/${UUID.randomUUID()}.$fileExtension"
+            val fileName = "${UUID.randomUUID()}.$fileExtension"
 
-            val request = PutObjectRequest {
-                bucket = bucketName
-                key = fileName
-                body = ByteStream.fromBytes(fileBytes)
-                this.contentType = contentType
+            val targetDir = when (folder) {
+                "tratamientos" -> treatmentsDir
+                "animals" -> animalsDir
+                else -> File(baseUploadDir, folder).also { it.mkdirs() }
             }
 
-            val response = s3Client.putObject(request)
+            val file = File(targetDir, fileName)
+            file.writeBytes(fileBytes)
 
-            val fileUrl = "https://$bucketName.s3.$region.amazonaws.com/$fileName"
+            val fileUrl = "/uploads/$folder/$fileName"
 
-            com.example.domain.models.FileUploadResponse(
+            FileUploadResponse(
                 success = true,
                 message = "Archivo subido exitosamente",
                 url = fileUrl
@@ -174,11 +74,47 @@ object S3Service {
 
         } catch (e: Exception) {
             println("Error subiendo archivo: ${e.message}")
-            com.example.domain.models.FileUploadResponse(
+            FileUploadResponse(
                 success = false,
                 message = "Error subiendo archivo: ${e.message}",
                 url = ""
             )
+        }
+    }
+
+    suspend fun deleteFile(filePath: String): Boolean {
+        return try {
+            // Extraer el path relativo (ej: /uploads/animals/filename.jpg -> animals/filename.jpg)
+            val relativePath = filePath.removePrefix("/uploads/")
+            val file = File(baseUploadDir, relativePath)
+
+            if (file.exists()) {
+                val deleted = file.delete()
+                if (deleted) {
+                    println("Archivo eliminado: ${file.absolutePath}")
+                }
+                deleted
+            } else {
+                println("Archivo no encontrado: ${file.absolutePath}")
+                false
+            }
+        } catch (e: Exception) {
+            println("Error eliminando archivo $filePath: ${e.message}")
+            false
+        }
+    }
+
+
+    private fun getExtension(contentType: String): String {
+        return when (contentType.lowercase()) {
+            "image/jpeg", "image/jpg" -> "jpg"
+            "image/png" -> "png"
+            "image/gif" -> "gif"
+            "image/webp" -> "webp"
+            "application/pdf" -> "pdf"
+            "application/msword" -> "doc"
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> "docx"
+            else -> "bin"
         }
     }
 

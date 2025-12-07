@@ -1,8 +1,5 @@
 package com.example.config
 
-import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
-import aws.sdk.kotlin.services.s3.S3Client
-import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import com.example.data.tables.repositories.AnimalRepositoryImpl
 import com.example.data.tables.repositories.CitaRepositoryImpl
 import com.example.data.tables.repositories.MedicamentoRepositoryImpl
@@ -22,10 +19,12 @@ import com.example.presentation.routes.tratamientoRoutes
 import io.github.cdimascio.dotenv.dotenv
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
+import io.ktor.server.http.content.staticFiles
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import java.io.File
 
 fun Application.configureRouting() {
     val rescatistaRepository = RescatistaRepositoryImpl()
@@ -35,7 +34,6 @@ fun Application.configureRouting() {
     val medicamentoRepository = MedicamentoRepositoryImpl()
     val citaRepository = CitaRepositoryImpl()
 
-    // Inicializar servicios
     val authService = AuthService(rescatistaRepository)
     val animalService = AnimalService(animalRepository)
     val tratamientoService = TratamientoService(tratamientoRepository)
@@ -43,6 +41,11 @@ fun Application.configureRouting() {
     val citaService = CitaService(citaRepository)
 
     routing {
+
+        staticFiles("/uploads", File("uploads")) {
+            default("index.html")
+            enableAutoHeadResponse()
+        }
         route("/api") {
             authRoutes(authService)
 
@@ -54,37 +57,6 @@ fun Application.configureRouting() {
                         "version" to "2.0.0"
                     )
                 )
-            }
-
-            get("/test-s3-connection") {
-                try {
-                    val env = dotenv {
-                        directory = "./"
-                        ignoreIfMissing = false
-                    }
-                    println("Bucket: ${env["AWS_S3_BUCKET"]}")
-
-                    val s3Client = S3Client {
-                        region = "us-east-1"
-                        credentialsProvider = StaticCredentialsProvider(
-                            Credentials(
-                                accessKeyId = env["AWS_ACCESS_KEY_ID"] ?: "",
-                                secretAccessKey = env["AWS_SECRET_ACCESS_KEY"] ?: "",
-                                sessionToken = env["AWS_SESSION_TOKEN"]
-                            )
-                        )
-                    }
-
-                    println("Cliente S3 creado:  ${s3Client}")
-
-                    call.respond("Cliente S3 - Bucket: ${env["AWS_S3_BUCKET"]}")
-
-                } catch (e: Exception) {
-                    println("Error creando cliente S3: ${e.message}")
-                    e.printStackTrace()
-
-                    call.respond("Error: ${e.message}")
-                }
             }
 
             authenticate("auth-jwt") {

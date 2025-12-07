@@ -38,3 +38,6 @@ out/
 
 # Archivos de entorno
 .env
+
+# Archivos subidos localmente
+uploads/

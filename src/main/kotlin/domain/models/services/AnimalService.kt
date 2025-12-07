@@ -25,10 +25,10 @@ class AnimalService(private val repository: AnimalRepository) {
         require(request.nombre.isNotBlank()) { "El nombre no puede estar vacío" }
         require(request.peso > 0) { "El peso debe ser mayor a 0" }
         require(request.edad > 0) { "La edad debe ser mayor a 0" }
-        require(request.sexo in listOf("Macho", "Hembra")) { "Sexo inválido" }
+        require(request.sexo in listOf("Macho", "Hembra")) { "Sexo inválido: ${request.sexo}" }
         require(request.especie.isNotBlank()) { "La especie no puede estar vacía" }
         require(request.estado in listOf("En recuperación", "En adopción", "Adoptado")) {
-            "Estado inválido"
+            "Estado inválido: ${request.estado}"
         }
     }
 
@@ -36,12 +36,19 @@ class AnimalService(private val repository: AnimalRepository) {
         animalRequest: AnimalRequest,
         rescateRequest: RescateRequestSinAnimalId
     ): AnimalRescateResponse? {
-        validateAnimalRequest(animalRequest)
-        require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
-        require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
+        try {
+            validateAnimalRequest(animalRequest)
 
-        val processedAnimalRequest = processImageUrl(animalRequest)
-        return repository.createAnimalConRescate(processedAnimalRequest, rescateRequest)
+            require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
+            require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
+
+            return repository.createAnimalConRescate(animalRequest, rescateRequest)
+
+        } catch (e: IllegalArgumentException) {
+            throw e
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     suspend fun updateAnimalConRescate(
@@ -49,37 +56,22 @@ class AnimalService(private val repository: AnimalRepository) {
         animalRequest: AnimalRequest,
         rescateRequest: RescateRequestSinAnimalId
     ): AnimalRescateResponse? {
-        validateAnimalRequest(animalRequest)
-        require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
-        require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
+        try {
+            validateAnimalRequest(animalRequest)
 
-        val processedAnimalRequest = processImageUrl(animalRequest)
-        return repository.updateAnimalConRescate(animalId, processedAnimalRequest, rescateRequest)
+            require(rescateRequest.lugar.isNotBlank()) { "El lugar de rescate no puede estar vacío" }
+            require(rescateRequest.descripcion.isNotBlank()) { "La descripción del rescate no puede estar vacía" }
+
+            return repository.updateAnimalConRescate(animalId, animalRequest, rescateRequest)
+
+        } catch (e: IllegalArgumentException) {
+            throw e
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     suspend fun getAnimalConRescate(id: UUID): AnimalRescateResponse? {
         return repository.getAnimalConRescate(id)
     }
-
-    private suspend fun processImageUrl(request: AnimalRequest): AnimalRequest {
-        val originalUrl = request.urlImage
-
-        if (originalUrl.isBlank() || originalUrl.contains("amazonaws.com")) {
-            return request
-        }
-
-        try {
-            val uploadResult = S3Service.uploadImageFromUrl(originalUrl)
-
-            if (uploadResult.success) {
-                return request.copy(urlImage = uploadResult.url)
-            } else {
-                return request
-            }
-        } catch (e: Exception) {
-            println("Error en imagen: ${e.message}")
-            return request
-        }
-    }
-
 }

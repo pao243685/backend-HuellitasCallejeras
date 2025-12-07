@@ -5,7 +5,7 @@ import com.example.domain.models.AnimalRequestsinImagen
 import com.example.domain.models.ApiResponse
 import com.example.domain.models.RescateRequestSinAnimalId
 import com.example.domain.models.services.AnimalService
-import com.example.domain.models.services.S3Service
+import com.example.domain.models.services.FileService
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.server.response.respond
@@ -18,16 +18,12 @@ import kotlinx.serialization.json.Json
 
 fun Route.animalRoutes(service: AnimalService) {
 
-    suspend fun deleteImageFromS3(fileName: String): Boolean {
+    suspend fun deleteImageFromLocal(filePath: String): Boolean {
         return try {
-            S3Service.deleteImage(fileName)
+            FileService.deleteFile(filePath)
         } catch (e: Exception) {
             false
         }
-    }
-
-    fun extractFileNameFromS3Url(url: String): String {
-        return S3Service.extractFileNameFromS3Url(url)
     }
 
     route("/animal") {
@@ -127,12 +123,10 @@ fun Route.animalRoutes(service: AnimalService) {
                 val deleted = service.deleteAnimal(id)
 
                 if (deleted) {
-                    if (animal.urlImage.isNotBlank() && animal.urlImage.contains("amazonaws.com")) {
+                    if (animal.urlImage.isNotBlank() && animal.urlImage.startsWith("/uploads/")) {
                         try {
-                            val fileName = extractFileNameFromS3Url(animal.urlImage)
-                            deleteImageFromS3(fileName)
+                            deleteImageFromLocal(animal.urlImage)
                         } catch (e: Exception) {
-                            // Silently fail on image deletion - animal is already deleted
                         }
                     }
 
@@ -191,7 +185,6 @@ fun Route.animalRoutes(service: AnimalService) {
                                 contentType = part.contentType?.toString() ?: "image/jpeg"
                             }
                         }
-
                         else -> {}
                     }
                     part.dispose()
@@ -227,7 +220,7 @@ fun Route.animalRoutes(service: AnimalService) {
                     )
                 }
 
-                val uploadResult = S3Service.uploadAnimalImage(imageBytes!!, contentType!!)
+                val uploadResult = FileService.uploadAnimalImage(imageBytes!!, contentType!!)
 
                 if (!uploadResult.success) {
                     return@post call.respond(
@@ -352,7 +345,15 @@ fun Route.animalRoutes(service: AnimalService) {
                 var urlImageFinal = animalActual?.urlImage ?: ""
 
                 if (imageBytes != null) {
-                    val uploadResult = S3Service.uploadAnimalImage(imageBytes!!, contentType!!)
+                    if (animalActual?.urlImage?.startsWith("/uploads/") == true) {
+                        try {
+                            deleteImageFromLocal(animalActual.urlImage)
+                        } catch (e: Exception) {
+
+                        }
+                    }
+
+                    val uploadResult = FileService.uploadAnimalImage(imageBytes!!, contentType!!)
                     if (uploadResult.success) {
                         urlImageFinal = uploadResult.url
                     }
